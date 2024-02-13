@@ -36,7 +36,6 @@ import mxhx.resolver.MXHXResolvers;
 import mxhx.resolver.MXHXSymbolTools;
 
 /**
-
 	An MXHX resolver that uses the [Haxe Runtime Type Information](https://haxe.org/manual/cr-rtti.html)
 	to resolve symbols.
 **/
