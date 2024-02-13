@@ -4,5 +4,6 @@
 -lib mxhx-resolver
 -lib utest
 --resource mxhx-manifest.xml@mxhx-manifest
+--macro haxe.macro.Compiler.include("fixtures", true)
 --macro haxe.macro.Compiler.addGlobalMetadata("fixtures", "@:rtti", true, true, false)
 --main Main
