@@ -1,0 +1,15 @@
+{
+  "name": "mxhx-rtti-resolver",
+  "url": "https://mxhx.dev/",
+  "license": "Apache",
+  "tags": ["xml", "mxhx", "markup", "gui"],
+  "description": "Resolves Haxe classes, fields, and other symbols from a parsed MXHX document using RTTI",
+  "version": "1.0.0",
+  "classPath": "src",
+  "dependencies": {
+    "mxhx-parser": "git:https://github.com/mxhx-dev/mxhx-parser.git",
+    "mxhx-resolver": "git:https://github.com/mxhx-dev/mxhx-resolver.git"
+  },
+  "contributors": ["bowlerhat"],
+  "releasenote": "Initial release"
+}
