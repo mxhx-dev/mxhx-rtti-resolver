@@ -14,6 +14,7 @@
 
 package mxhx.resolver.rtti;
 
+import haxe.Resource;
 import haxe.rtti.CType;
 import haxe.rtti.XmlParser;
 import mxhx.internal.resolver.MXHXAbstractSymbol;
@@ -131,6 +132,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 				return createMXHXAbstractSymbolForBuiltin(nameToResolve, params);
 			default:
 		}
+		var classTypeTree:TypeTree = null;
 		var resolvedEnum = Type.resolveEnum(nameToResolve);
 		if ((resolvedEnum is Enum)) {
 			var enumTypeTree:TypeTree;
@@ -148,14 +150,20 @@ class MXHXRttiResolver implements IMXHXResolver {
 		}
 		var resolvedClass = Type.resolveClass(nameToResolve);
 		if (resolvedClass == null) {
-			return null;
+			// an abstract might not exist at runtime,
+			// but its rtti data may have been embedded
+			classTypeTree = getMxhxFallbackTypeTree(nameToResolve);
+			if (classTypeTree == null) {
+				return null;
+			}
 		}
 
-		var classTypeTree:TypeTree;
-		try {
-			classTypeTree = getTypeTree(resolvedClass);
-		} catch (e:Dynamic) {
-			return createMXHXClassSymbolForClass(resolvedClass, params);
+		if (classTypeTree == null) {
+			try {
+				classTypeTree = getTypeTree(resolvedClass);
+			} catch (e:Dynamic) {
+				return createMXHXClassSymbolForClass(resolvedClass, params);
+			}
 		}
 		switch (classTypeTree) {
 			case TClassdecl(classdef):
@@ -166,15 +174,31 @@ class MXHXRttiResolver implements IMXHXResolver {
 			case TEnumdecl(enumdef):
 				return createMXHXEnumSymbolForEnumdef(enumdef, params);
 			case TAbstractdecl(abstractdef):
+				if (Lambda.exists(abstractdef.meta, m -> m.name == ":enum")) {
+					return createMXHXEnumSymbolForAbstractdef(abstractdef, params);
+				}
 				return createMXHXAbstractSymbolForAbstractdef(abstractdef, params);
 			default:
-				return createMXHXClassSymbolForClass(resolvedClass, params);
+				return null;
 		}
 	}
 
-	private static function getTypeTree<T>(c:Any):TypeTree {
+	private static function getMxhxFallbackTypeTree(qname:String):TypeTree {
+		var rtti = Resource.getString('__mxhxRtti_${qname}');
+		if (rtti == null) {
+			return null;
+		}
+		var x = Xml.parse(rtti).firstElement();
+		return new haxe.rtti.XmlParser().processElement(x);
+	}
+
+	private static function getTypeTree(c:Any):TypeTree {
 		var rtti = Reflect.field(c, "__rtti");
 		if (rtti == null) {
+			var fallback = getMxhxFallbackTypeTree(Type.getClassName(c));
+			if (fallback != null) {
+				return fallback;
+			}
 			if ((c is Class)) {
 				throw 'Class ${Type.getClassName(c)} has no RTTI information, consider adding @:rtti';
 			} else if ((c is Enum)) {
@@ -320,6 +344,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
+		if (name == "TestPropertiesClass") {}
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true)));
 		result.fields = fields;
@@ -465,6 +490,41 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return result;
 	}
 
+	private function createMXHXEnumSymbolForAbstractdef(abstractdef:Abstractdef, params:Array<IMXHXTypeSymbol>):IMXHXEnumSymbol {
+		var name = abstractdef.path;
+		var dotIndex = name.lastIndexOf(".");
+		var pack:Array<String> = [];
+		if (dotIndex != -1) {
+			var packString = name.substr(0, dotIndex);
+			pack = packString.split(".");
+			name = name.substr(dotIndex + 1);
+		}
+		var moduleName = abstractdef.module;
+		if (moduleName == null) {
+			moduleName = abstractdef.path;
+		}
+		var qname = MXHXResolverTools.definitionToQname(name, pack, moduleName,
+			params != null ? params.map(param -> param != null ? param.qname : null) : null);
+		var result = new MXHXEnumSymbol(name, pack);
+		result.qname = qname;
+		result.module = moduleName;
+		result.doc = abstractdef.doc;
+		result.file = abstractdef.file;
+		// result.offsets = {start: pos.min, end: pos.max};
+		result.isPrivate = abstractdef.isPrivate;
+		// fields may reference this type, so make sure that it's available
+		// before parsing anything else
+		qnameToMXHXTypeSymbolLookup.set(qname, result);
+
+		result.params = params != null ? params : [];
+		var fields:Array<IMXHXEnumFieldSymbol> = [];
+		// fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false)));
+		// fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true)));
+		result.fields = fields;
+		result.meta = abstractdef.meta != null ? abstractdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
+		return result;
+	}
+
 	private function createMXHXAbstractSymbolForAbstractdef(abstractdef:Abstractdef, params:Array<IMXHXTypeSymbol>):IMXHXAbstractSymbol {
 		var name = abstractdef.path;
 		var dotIndex = name.lastIndexOf(".");
@@ -550,11 +610,6 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var typeQname = cTypeToQname(field.type);
 		if (typeQname != null) {
 			resolvedType = resolveQname(typeQname);
-			if (resolvedType == null) {
-				// type is included in RTTI data, but it is missing at runtime
-				// let's assume that it is an abstract
-				resolvedType = createMXHXAbstractSymbolForBuiltin(typeQname, []);
-			}
 		}
 		var isMethod = false;
 		var isReadable = false;
