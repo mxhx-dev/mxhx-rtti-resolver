@@ -537,7 +537,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
 		if (abstractdef.impl != null) {
 			fields = fields.concat(abstractdef.impl.statics.map(function(field):IMXHXEnumFieldSymbol {
-				return new MXHXEnumFieldSymbol(field.name, result);
+				var fieldSymbol = new MXHXEnumFieldSymbol(field.name, result);
+				fieldSymbol.inlineExpr = field.expr;
+				return fieldSymbol;
 			}));
 		}
 		result.fields = fields;
