@@ -294,7 +294,7 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.equals("Xml", typeSymbol.qname);
 	}
 
-	public function testResolveFieldValueTypeAbstractEnumValue():Void {
+	public function testResolveFieldValueTypeAbstractEnumValueEmpty():Void {
 		var offsetTag = getOffsetTag('
 			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
 				<tests:abstractEnumValue>
@@ -311,7 +311,7 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.equals("fixtures.TestPropertyAbstractEnum", typeSymbol.qname);
 	}
 
-	public function testResolveFieldValueTypeAbstractEnumValue1():Void {
+	public function testResolveFieldValueTypeAbstractEnumFieldValue():Void {
 		var offsetTag = getOffsetTag('
 			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
 				<tests:abstractEnumValue>
@@ -328,7 +328,7 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.equals("Value1", fieldSymbol.name);
 	}
 
-	public function testResolveFieldValueTypeEnumValue():Void {
+	public function testResolveFieldValueTypeEnumValueEmpty():Void {
 		var offsetTag = getOffsetTag('
 			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
 				<tests:enumValue>
@@ -343,6 +343,23 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.isOfType(resolved, IMXHXEnumSymbol);
 		var typeSymbol:IMXHXEnumSymbol = cast resolved;
 		Assert.equals("fixtures.TestPropertyEnum", typeSymbol.qname);
+	}
+
+	public function testResolveFieldValueTypeEnumFieldValue():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:enumValue>
+					<tests:TestPropertyEnum.Value1/>
+				</tests:enumValue>
+			</tests:TestPropertiesClass>
+		', 172);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXEnumFieldSymbol);
+		var fieldSymbol:IMXHXEnumFieldSymbol = cast resolved;
+		Assert.equals("Value1", fieldSymbol.name);
 	}
 
 	public function testResolveFieldValueTypeNull():Void {
