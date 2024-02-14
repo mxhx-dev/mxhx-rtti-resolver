@@ -131,7 +131,8 @@ class MXHXRtti {
 
 		if (abstractType.impl != null) {
 			var implElement = Xml.createElement("impl");
-			implElement.addChild(createRttiForClassType(abstractType.impl.get(), []));
+			var classType = abstractType.impl.get();
+			implElement.addChild(createRttiForClassType(classType, []));
 			rootElement.addChild(implElement);
 		}
 
@@ -262,6 +263,40 @@ class MXHXRtti {
 						classFieldElement.set("get", "get");
 					case AccInline:
 						classFieldElement.set("get", "inline");
+
+						var metadataEntries:Array<MetadataEntry> = classField.meta.get();
+						var valueEntry = Lambda.find(metadataEntries, metadataEntry -> metadataEntry.name == ":value");
+						if (valueEntry != null && valueEntry.params != null && valueEntry.params.length > 0) {
+							var valueParam = valueEntry.params[0];
+							var eString:String = "";
+							var current = valueParam;
+							while (current != null) {
+								switch (current.expr) {
+									case ECast(e, t):
+										eString += "cast ";
+										current = e;
+									case EConst(CInt(v, s)):
+										eString += Std.string(v);
+										current = null;
+									case EConst(CFloat(f, s)):
+										eString += Std.string(f);
+										current = null;
+									case EConst(CString(s, DoubleQuotes)):
+										eString += '"${s}"';
+										current = null;
+									case EConst(CString(s, SingleQuotes)):
+										eString += '\'${s}\'';
+										current = null;
+									default:
+										eString = null;
+										current = null;
+								}
+							}
+							if (eString != null) {
+								classFieldElement.set("expr", eString);
+							}
+						}
+
 					default:
 						throw 'Unknown read: $read';
 				}
