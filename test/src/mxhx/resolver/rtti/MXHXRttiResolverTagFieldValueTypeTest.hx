@@ -3,6 +3,7 @@ package mxhx.resolver.rtti;
 import haxe.Resource;
 import mxhx.parser.MXHXParser;
 import mxhx.resolver.IMXHXClassSymbol;
+import mxhx.resolver.IMXHXEnumFieldSymbol;
 import mxhx.resolver.IMXHXEnumSymbol;
 import utest.Assert;
 import utest.Test;
@@ -308,6 +309,23 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.isOfType(resolved, IMXHXTypeSymbol);
 		var typeSymbol:IMXHXTypeSymbol = cast resolved;
 		Assert.equals("fixtures.TestPropertyAbstractEnum", typeSymbol.qname);
+	}
+
+	public function testResolveFieldValueTypeAbstractEnumValue1():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:abstractEnumValue>
+					<tests:TestPropertyAbstractEnum.Value1/>
+				</tests:abstractEnumValue>
+			</tests:TestPropertiesClass>
+		', 188);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXEnumFieldSymbol);
+		var fieldSymbol:IMXHXEnumFieldSymbol = cast resolved;
+		Assert.equals("Value1", fieldSymbol.name);
 	}
 
 	public function testResolveFieldValueTypeEnumValue():Void {
