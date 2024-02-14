@@ -326,6 +326,8 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.isOfType(resolved, IMXHXEnumFieldSymbol);
 		var fieldSymbol:IMXHXEnumFieldSymbol = cast resolved;
 		Assert.equals("Value1", fieldSymbol.name);
+		Assert.notNull(fieldSymbol.parent);
+		Assert.equals("fixtures.TestPropertyAbstractEnum", fieldSymbol.parent.qname);
 	}
 
 	public function testResolveFieldValueTypeEnumValueEmpty():Void {
@@ -360,6 +362,37 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.isOfType(resolved, IMXHXEnumFieldSymbol);
 		var fieldSymbol:IMXHXEnumFieldSymbol = cast resolved;
 		Assert.equals("Value1", fieldSymbol.name);
+		Assert.notNull(fieldSymbol.parent);
+		Assert.equals("fixtures.TestPropertyEnum", fieldSymbol.parent.qname);
+	}
+
+	public function testResolveFieldValueTypeComplexEnumValue():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:complexEnum>
+					<tests:TestComplexEnum.Two a="hello" b="123.4"/>
+				</tests:complexEnum>
+			</tests:TestPropertiesClass>
+		', 173);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXEnumFieldSymbol);
+		var fieldSymbol:IMXHXEnumFieldSymbol = cast resolved;
+		Assert.equals("Two", fieldSymbol.name);
+		Assert.notNull(fieldSymbol.parent);
+		Assert.equals("fixtures.TestComplexEnum", fieldSymbol.parent.qname);
+		var args = fieldSymbol.args;
+		Assert.equals(2, args.length);
+		Assert.equals("a", args[0].name);
+		Assert.isFalse(args[0].optional);
+		Assert.notNull(args[0].type);
+		Assert.equals("String", args[0].type.qname);
+		Assert.equals("b", args[1].name);
+		Assert.isTrue(args[1].optional);
+		Assert.notNull(args[1].type);
+		Assert.equals("Null<Float>", args[1].type.qname);
 	}
 
 	public function testResolveFieldValueTypeNull():Void {

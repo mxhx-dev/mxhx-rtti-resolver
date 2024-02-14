@@ -18,6 +18,7 @@ import haxe.Resource;
 import haxe.rtti.CType;
 import haxe.rtti.XmlParser;
 import mxhx.internal.resolver.MXHXAbstractSymbol;
+import mxhx.internal.resolver.MXHXArgumentSymbol;
 import mxhx.internal.resolver.MXHXClassSymbol;
 import mxhx.internal.resolver.MXHXEnumFieldSymbol;
 import mxhx.internal.resolver.MXHXEnumSymbol;
@@ -195,7 +196,13 @@ class MXHXRttiResolver implements IMXHXResolver {
 	private static function getTypeTree(c:Any):TypeTree {
 		var rtti = Reflect.field(c, "__rtti");
 		if (rtti == null) {
-			var fallback = getMxhxFallbackTypeTree(Type.getClassName(c));
+			var typeName = if ((c is Enum)) {
+				var e:Enum<Dynamic> = cast c;
+				e.getName();
+			} else {
+				Type.getClassName(c);
+			}
+			var fallback = getMxhxFallbackTypeTree(typeName);
 			if (fallback != null) {
 				return fallback;
 			}
@@ -460,7 +467,16 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
 		fields = fields.concat(enumdef.constructors.map(function(constructor:EnumField):IMXHXEnumFieldSymbol {
-			return new MXHXEnumFieldSymbol(constructor.name, result);
+			var args:Array<IMXHXArgumentSymbol> = null;
+			var constructorArgs = constructor.args;
+			if (constructorArgs != null) {
+				args = constructorArgs.map(function(arg):IMXHXArgumentSymbol {
+					var argQname = cTypeToQname(arg.t);
+					var type = resolveQname(argQname);
+					return new MXHXArgumentSymbol(arg.name, type, arg.opt);
+				});
+			}
+			return new MXHXEnumFieldSymbol(constructor.name, result, args);
 		}));
 		result.fields = fields;
 		result.meta = enumdef.meta != null ? enumdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
