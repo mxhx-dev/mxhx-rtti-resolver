@@ -574,6 +574,12 @@ class MXHXRttiResolver implements IMXHXResolver {
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
 		result.params = params != null ? params : [];
+
+		result.from = abstractdef.from.map(from -> {
+			var qname = cTypeToQname(from.t);
+			return resolveQname(qname);
+		});
+
 		result.meta = abstractdef.meta != null ? abstractdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
 		return result;
 	}
