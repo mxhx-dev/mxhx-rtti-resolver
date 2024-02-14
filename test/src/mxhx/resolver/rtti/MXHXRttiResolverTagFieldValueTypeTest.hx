@@ -2,9 +2,10 @@ package mxhx.resolver.rtti;
 
 import haxe.Resource;
 import mxhx.parser.MXHXParser;
-import mxhx.resolver.IMXHXClassSymbol;
-import mxhx.resolver.IMXHXEnumFieldSymbol;
-import mxhx.resolver.IMXHXEnumSymbol;
+import mxhx.symbols.IMXHXClassSymbol;
+import mxhx.symbols.IMXHXEnumFieldSymbol;
+import mxhx.symbols.IMXHXEnumSymbol;
+import mxhx.symbols.IMXHXTypeSymbol;
 import utest.Assert;
 import utest.Test;
 

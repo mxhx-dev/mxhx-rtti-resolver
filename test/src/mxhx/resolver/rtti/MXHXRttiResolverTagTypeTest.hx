@@ -2,6 +2,7 @@ package mxhx.resolver.rtti;
 
 import haxe.Resource;
 import mxhx.parser.MXHXParser;
+import mxhx.symbols.IMXHXTypeSymbol;
 import utest.Assert;
 import utest.Test;
 
