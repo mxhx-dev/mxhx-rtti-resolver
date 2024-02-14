@@ -459,8 +459,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
-		// fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false)));
-		// fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true)));
+		fields = fields.concat(enumdef.constructors.map(function(constructor:EnumField):IMXHXEnumFieldSymbol {
+			return new MXHXEnumFieldSymbol(constructor.name, result);
+		}));
 		result.fields = fields;
 		result.meta = enumdef.meta != null ? enumdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
 		return result;
@@ -518,8 +519,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
-		// fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false)));
-		// fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true)));
+		if (abstractdef.impl != null) {
+			fields = fields.concat(abstractdef.impl.statics.map(function(field):IMXHXEnumFieldSymbol {
+				return new MXHXEnumFieldSymbol(field.name, result);
+			}));
+		}
 		result.fields = fields;
 		result.meta = abstractdef.meta != null ? abstractdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
 		return result;
