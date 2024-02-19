@@ -169,13 +169,37 @@ class MXHXRttiResolver implements IMXHXResolver {
 		}
 		switch (classTypeTree) {
 			case TClassdecl(classdef):
+				if (classdef.module != classdef.path) {
+					var lastDotIndex = classdef.path.lastIndexOf(".");
+					var moduleQname = classdef.module + "." + classdef.path.substr(lastDotIndex + 1);
+					var resolved = qnameToMXHXTypeSymbolLookup.get(moduleQname);
+					if (resolved != null) {
+						return resolved;
+					}
+				}
 				if (classdef.isInterface) {
 					return createMXHXInterfaceSymbolForClassdef(classdef, params);
 				}
 				return createMXHXClassSymbolForClassdef(classdef, params);
 			case TEnumdecl(enumdef):
+				if (enumdef.module != enumdef.path) {
+					var lastDotIndex = enumdef.path.lastIndexOf(".");
+					var moduleQname = enumdef.module + "." + enumdef.path.substr(lastDotIndex + 1);
+					var resolved = qnameToMXHXTypeSymbolLookup.get(moduleQname);
+					if (resolved != null) {
+						return resolved;
+					}
+				}
 				return createMXHXEnumSymbolForEnumdef(enumdef, params);
 			case TAbstractdecl(abstractdef):
+				if (abstractdef.module != abstractdef.path) {
+					var lastDotIndex = abstractdef.path.lastIndexOf(".");
+					var moduleQname = abstractdef.module + "." + abstractdef.path.substr(lastDotIndex + 1);
+					var resolved = qnameToMXHXTypeSymbolLookup.get(moduleQname);
+					if (resolved != null) {
+						return resolved;
+					}
+				}
 				if (Lambda.exists(abstractdef.meta, m -> m.name == ":enum")) {
 					return createMXHXEnumSymbolForAbstractdef(abstractdef, params);
 				}
@@ -267,6 +291,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		qname = MXHXResolverTools.definitionToQname(name, pack, moduleName, params.map(param -> param != null ? param.qname : null));
 		var result = new MXHXAbstractSymbol(name, [], params);
 		result.qname = qname;
+		qnameToMXHXTypeSymbolLookup.set(qname, result);
+
 		return result;
 	}
 
@@ -290,6 +316,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		qname = MXHXResolverTools.definitionToQname(name, pack, moduleName, params.map(param -> param != null ? param.qname : null));
 		var result = new MXHXClassSymbol(name, pack, params);
 		result.qname = qname;
+		qnameToMXHXTypeSymbolLookup.set(qname, result);
+
 		var resolvedSuperClass = Type.getSuperClass(resolvedClass);
 		if (resolvedSuperClass != null) {
 			var superClassQname = classToQname(resolvedSuperClass);
@@ -502,9 +530,12 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var result = new MXHXEnumSymbol(name, pack);
 		result.qname = qname;
 		result.module = moduleName;
+		qnameToMXHXTypeSymbolLookup.set(qname, result);
+
 		result.fields = resolvedEnum.getConstructors().map(function(enumConstructorName:String):IMXHXEnumFieldSymbol {
 			return new MXHXEnumFieldSymbol(enumConstructorName, result);
 		});
+
 		return result;
 	}
 
