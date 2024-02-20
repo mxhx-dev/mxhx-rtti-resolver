@@ -322,7 +322,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		if (resolvedSuperClass != null) {
 			var superClassQname = classToQname(resolvedSuperClass);
 			var classType = resolveQname(superClassQname);
-			if (!(classType is IMXHXInterfaceSymbol)) {
+			if (!(classType is IMXHXClassSymbol)) {
 				throw 'Expected class: ${classType.qname}. Is it missing @:rtti metadata?';
 			}
 			result.superClass = cast(classType, IMXHXClassSymbol);
