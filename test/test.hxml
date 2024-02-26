@@ -1,6 +1,5 @@
 -cp ../src
 -cp src
--lib mxhx-parser
 -lib mxhx-resolver
 -lib utest
 --resource mxhx-manifest.xml@mxhx-manifest

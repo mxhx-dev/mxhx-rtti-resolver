@@ -1,5 +1,4 @@
 -cp ../src
--lib mxhx-parser
 -lib mxhx-resolver
 -D doc_gen
 --macro include("mxhx.resolver.rtti")
