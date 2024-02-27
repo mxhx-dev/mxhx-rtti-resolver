@@ -37,13 +37,14 @@ class MXHXRtti {
 	#if macro
 	public static function save():Void {
 		Context.onAfterTyping((modules:Array<ModuleType>) -> {
+			final isFlash = Context.defined("flash");
 			var rttiData:Array<Xml> = [];
 			for (mod in modules) {
 				switch (mod) {
 					case TClassDecl(c):
-						if (Context.defined("flash")) {
+						if (isFlash) {
 							var classType = c.get();
-							if (classType.pack.length > 0 && classType.pack[0] == "flash") {
+							if (classType.pack.length > 0 && classType.pack[0] == "flash" && classType.meta.has(":rtti")) {
 								var classRtti = createRttiForClassType(classType, []);
 								rttiData.push(classRtti);
 							}
