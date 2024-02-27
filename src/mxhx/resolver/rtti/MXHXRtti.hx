@@ -308,6 +308,10 @@ class MXHXRtti {
 						// this field doesn't seem to be supported
 						// and should be safe to ignore
 						return;
+					case AccCtor:
+						// should be safe to ignore because it is accessible
+						// only from the constructor
+						return;
 					default:
 						throw 'Unknown read: $read';
 				}
@@ -325,6 +329,10 @@ class MXHXRtti {
 					case AccRequire(r, msg):
 						// this field doesn't seem to be supported
 						// and should be safe to ignore
+						return;
+					case AccCtor:
+						// should be safe to ignore because it is accessible
+						// only from the constructor
 						return;
 					default:
 						throw 'Unknown write: $write';

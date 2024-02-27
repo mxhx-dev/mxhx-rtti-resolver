@@ -372,7 +372,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		for (currentInterface in classdef.interfaces) {
 			var interfaceType = resolveQname(currentInterface.path);
 			if (!(interfaceType is IMXHXInterfaceSymbol)) {
-				throw 'Expected interface: ${interfaceType.qname}. Is it missing @:rtti metadata?';
+				throw 'Expected interface: ${interfaceType.qname}. Is it missing @:rtti metadata? 1: ${classdef.path}';
 			}
 			var resolvedInterface = cast(interfaceType, IMXHXInterfaceSymbol);
 			resolvedInterfaces.push(resolvedInterface);
@@ -435,7 +435,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		for (currentInterface in classdef.interfaces) {
 			var interfaceType = resolveQname(currentInterface.path);
 			if (!(interfaceType is IMXHXInterfaceSymbol)) {
-				throw 'Expected interface: ${interfaceType.qname}. Is it missing @:rtti metadata?';
+				throw 'Expected interface: ${interfaceType.qname}. Is it missing @:rtti metadata? 2: ${classdef.path}';
 			}
 			var resolvedInterface = cast(interfaceType, IMXHXInterfaceSymbol);
 			resolvedInterfaces.push(resolvedInterface);
