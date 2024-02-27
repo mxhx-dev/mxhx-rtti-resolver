@@ -380,7 +380,6 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
-		if (name == "TestPropertiesClass") {}
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true)));
 		result.fields = fields;
