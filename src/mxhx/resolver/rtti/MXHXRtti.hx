@@ -40,6 +40,14 @@ class MXHXRtti {
 			var rttiData:Array<Xml> = [];
 			for (mod in modules) {
 				switch (mod) {
+					case TClassDecl(c):
+						if (Context.defined("flash")) {
+							var classType = c.get();
+							if (classType.pack.length > 0 && classType.pack[0] == "flash") {
+								var classRtti = createRttiForClassType(classType, []);
+								rttiData.push(classRtti);
+							}
+						}
 					case TAbstract(a):
 						var abstractType = a.get();
 						if (abstractType.meta.has(":rtti")) {
@@ -296,7 +304,10 @@ class MXHXRtti {
 								classFieldElement.set("expr", eString);
 							}
 						}
-
+					case AccRequire(r, msg):
+						// this field doesn't seem to be supported
+						// and should be safe to ignore
+						return;
 					default:
 						throw 'Unknown read: $read';
 				}
@@ -311,6 +322,10 @@ class MXHXRtti {
 						classFieldElement.set("set", "get");
 					case AccInline:
 						classFieldElement.set("set", "inline");
+					case AccRequire(r, msg):
+						// this field doesn't seem to be supported
+						// and should be safe to ignore
+						return;
 					default:
 						throw 'Unknown write: $write';
 				}
