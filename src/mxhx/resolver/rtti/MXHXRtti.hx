@@ -173,6 +173,13 @@ class MXHXRtti {
 		if (classType.isFinal) {
 			rootElement.set("final", "1");
 		}
+		if (classType.superClass != null) {
+			var superClassType = classType.superClass.t.get();
+			var superClassPath = baseTypeToPath(superClassType);
+			var extendsElement = Xml.createElement("extends");
+			extendsElement.set("path", superClassPath);
+			rootElement.addChild(extendsElement);
+		}
 		// if (classType.isAbstract) {
 		// 	rootElement.set("abstract", "1");
 		// }
