@@ -5,5 +5,5 @@
 --resource mxhx-manifest.xml@mxhx-manifest
 --macro haxe.macro.Compiler.include("fixtures", true)
 --macro haxe.macro.Compiler.addGlobalMetadata("fixtures", "@:rtti", true, true, false)
---macro mxhx.resolver.rtti.MXHXRtti.save()
+--macro mxhx.resolver.rtti.MXHXRttiGenerator.generate()
 --main Main

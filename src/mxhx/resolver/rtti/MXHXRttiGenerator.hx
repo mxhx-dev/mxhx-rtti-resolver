@@ -28,14 +28,15 @@ import haxe.macro.Type.EnumType;
 import haxe.macro.Type.ModuleType;
 
 /**
-	Saves RTTI data for abstracts and enums because the compiler skips them,
-	but their data is still needed by `MXHXRttiResolver`.
+	Generates RTTI data for certain types, like abstracts, enums, and certain
+	native classes, because the compiler skips them, but their data is still
+	needed by `MXHXRttiResolver`.
 **/
 @:noCompletion
 @:dox(hide)
-class MXHXRtti {
+class MXHXRttiGenerator {
 	#if macro
-	public static function save():Void {
+	public static function generate():Void {
 		Context.onAfterTyping((modules:Array<ModuleType>) -> {
 			final isFlash = Context.defined("flash");
 			var rttiData:Array<Xml> = [];
