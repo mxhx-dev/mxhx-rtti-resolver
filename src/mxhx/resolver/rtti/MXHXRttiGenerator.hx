@@ -62,12 +62,12 @@ class MXHXRttiGenerator {
 							var enumRtti = createRttiForEnumType(enumType, []);
 							rttiData.push(enumRtti);
 						}
-					// case TTypeDecl(t):
-					// 	var defType = t.get();
-					// 	if (defType.meta.has(":rtti")) {
-					// 		var defRtti = createRttiForDefType(defType, []);
-					// 		rttiData.push(defRtti);
-					// 	}
+					case TTypeDecl(t):
+						var defType = t.get();
+						if (defType.meta.has(":rtti")) {
+							var defRtti = createRttiForDefType(defType, []);
+							rttiData.push(defRtti);
+						}
 					default:
 				}
 			}
@@ -165,6 +165,7 @@ class MXHXRttiGenerator {
 		addBasicAttributes(defType, params, rootElement);
 		addDoc(defType, rootElement);
 		addMetadata(defType, rootElement);
+		addTypeElement(defType.type, rootElement);
 		return rootElement;
 	}
 
