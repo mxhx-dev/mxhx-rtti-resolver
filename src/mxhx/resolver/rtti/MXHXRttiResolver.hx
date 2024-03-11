@@ -204,6 +204,12 @@ class MXHXRttiResolver implements IMXHXResolver {
 					return createMXHXEnumSymbolForAbstractdef(abstractdef, params);
 				}
 				return createMXHXAbstractSymbolForAbstractdef(abstractdef, params);
+			case TTypedecl(t):
+				var newQname = cTypeToQname(t.type);
+				if (newQname != null) {
+					return resolveQname(newQname);
+				}
+				return null;
 			default:
 				return null;
 		}
