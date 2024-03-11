@@ -292,10 +292,18 @@ class MXHXRttiGenerator {
 									case ECast(e, t):
 										eString += "cast ";
 										current = e;
+									#if (haxe_ver >= 4.3)
 									case EConst(CInt(v, s)):
+									#else
+									case EConst(CInt(v)):
+									#end
 										eString += Std.string(v);
 										current = null;
+									#if (haxe_ver >= 4.3)
 									case EConst(CFloat(f, s)):
+									#else
+									case EConst(CFloat(f)):
+									#end
 										eString += Std.string(f);
 										current = null;
 									case EConst(CString(s, DoubleQuotes)):
