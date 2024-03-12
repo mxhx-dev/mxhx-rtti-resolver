@@ -687,6 +687,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 			default:
 		};
 		switch (field.set) {
+			case RMethod:
+				isMethod = true;
 			case RNormal:
 				isWritable = true;
 			default:
