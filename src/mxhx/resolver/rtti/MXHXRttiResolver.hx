@@ -386,8 +386,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
-		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false)));
-		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true)));
+		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef)));
+		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef)));
 		result.fields = fields;
 		result.meta = classdef.meta != null ? classdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
 		// result.events = classdef.meta.map(eventMeta -> {
@@ -448,8 +448,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
-		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false)));
-		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true)));
+		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef)));
+		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef)));
 		result.fields = fields;
 		result.meta = classdef.meta != null ? classdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
 		// result.events = classdef.meta.map(eventMeta -> {
@@ -670,7 +670,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return result;
 	}
 
-	private function createMXHXFieldSymbolForClassField(field:ClassField, isStatic:Bool):IMXHXFieldSymbol {
+	private function createMXHXFieldSymbolForClassField(field:ClassField, isStatic:Bool, classdef:Classdef):IMXHXFieldSymbol {
 		var resolvedType:IMXHXTypeSymbol = null;
 		var typeQname = cTypeToQname(field.type);
 		if (typeQname != null) {
@@ -684,12 +684,16 @@ class MXHXRttiResolver implements IMXHXResolver {
 				isMethod = true;
 			case RNormal:
 				isReadable = true;
+			case RCall("accessor"):
+				isReadable = true;
 			default:
 		};
 		switch (field.set) {
 			case RMethod:
 				isMethod = true;
 			case RNormal:
+				isWritable = true;
+			case RCall("accessor"):
 				isWritable = true;
 			default:
 		};
