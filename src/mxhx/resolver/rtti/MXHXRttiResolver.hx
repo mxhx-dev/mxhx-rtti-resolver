@@ -389,7 +389,17 @@ class MXHXRttiResolver implements IMXHXResolver {
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef)));
 		result.fields = fields;
-		result.meta = classdef.meta != null ? classdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
+		if (classdef.meta != null) {
+			result.meta = classdef.meta.map(m -> {
+				var params:Array<String> = null;
+				if (m.params != null) {
+					params = m.params.copy();
+				}
+				return {name: m.name, params: params};
+			});
+		} else {
+			result.meta = [];
+		}
 		// result.events = classdef.meta.map(eventMeta -> {
 		// 	if (eventMeta.name != ":event") {
 		// 		return null;
@@ -451,7 +461,17 @@ class MXHXRttiResolver implements IMXHXResolver {
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef)));
 		result.fields = fields;
-		result.meta = classdef.meta != null ? classdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
+		if (classdef.meta != null) {
+			result.meta = classdef.meta.map(m -> {
+				var params:Array<String> = null;
+				if (m.params != null) {
+					params = m.params.copy();
+				}
+				return {name: m.name, params: params};
+			});
+		} else {
+			result.meta = [];
+		}
 		// result.events = classdef.meta.map(eventMeta -> {
 		// 	if (eventMeta.name != ":event") {
 		// 		return null;
@@ -513,7 +533,17 @@ class MXHXRttiResolver implements IMXHXResolver {
 			return new MXHXEnumFieldSymbol(constructor.name, result, args);
 		}));
 		result.fields = fields;
-		result.meta = enumdef.meta != null ? enumdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
+		if (enumdef.meta != null) {
+			result.meta = enumdef.meta.map(m -> {
+				var params:Array<String> = null;
+				if (m.params != null) {
+					params = m.params.copy();
+				}
+				return {name: m.name, params: params};
+			});
+		} else {
+			result.meta = [];
+		}
 		return result;
 	}
 
@@ -580,7 +610,17 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}));
 		}
 		result.fields = fields;
-		result.meta = abstractdef.meta != null ? abstractdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
+		if (abstractdef.meta != null) {
+			result.meta = abstractdef.meta.map(m -> {
+				var params:Array<String> = null;
+				if (m.params != null) {
+					params = m.params.copy();
+				}
+				return {name: m.name, params: params};
+			});
+		} else {
+			result.meta = [];
+		}
 		return result;
 	}
 
@@ -617,7 +657,17 @@ class MXHXRttiResolver implements IMXHXResolver {
 			return resolveQname(qname);
 		});
 
-		result.meta = abstractdef.meta != null ? abstractdef.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
+		if (abstractdef.meta != null) {
+			result.meta = abstractdef.meta.map(m -> {
+				var params:Array<String> = null;
+				if (m.params != null) {
+					params = m.params.copy();
+				}
+				return {name: m.name, params: params};
+			});
+		} else {
+			result.meta = [];
+		}
 		return result;
 	}
 
@@ -705,7 +755,17 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.doc = field.doc;
 		// result.file = field.file;
 		// result.offsets = {start: field.pos.min, end: field.pos.max};
-		result.meta = field.meta != null ? field.meta.copy().map(m -> {name: m.name, params: null, pos: null}) : null;
+		if (field.meta != null) {
+			result.meta = field.meta.map(m -> {
+				var params:Array<String> = null;
+				if (m.params != null) {
+					params = m.params.copy();
+				}
+				return {name: m.name, params: params};
+			});
+		} else {
+			result.meta = [];
+		}
 		return result;
 	}
 
