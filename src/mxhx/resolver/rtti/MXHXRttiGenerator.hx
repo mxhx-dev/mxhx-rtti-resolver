@@ -17,6 +17,7 @@ package mxhx.resolver.rtti;
 import haxe.io.Bytes;
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.ExprTools;
 import haxe.macro.PositionTools;
 import haxe.macro.Type.AbstractType;
 import haxe.macro.Type.BaseType;
@@ -368,6 +369,15 @@ class MXHXRttiGenerator {
 		for (metadataEntry in metadataEntries) {
 			var mElement = Xml.createElement("m");
 			mElement.set("n", metadataEntry.name);
+			if (metadataEntry.params != null) {
+				for (param in metadataEntry.params) {
+					var exprAsString = ExprTools.toString({expr: param.expr, pos: null});
+					var eElement = Xml.createElement("e");
+					var pcData = Xml.createPCData(exprAsString);
+					eElement.addChild(pcData);
+					mElement.addChild(eElement);
+				}
+			}
 			metaElement.addChild(mElement);
 		}
 		return metaElement;
