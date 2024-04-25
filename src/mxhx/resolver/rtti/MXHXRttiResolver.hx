@@ -660,6 +660,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 			return resolveQname(qname);
 		});
 
+		result.to = abstractdef.to.map(to -> {
+			var qname = cTypeToQname(to.t);
+			return resolveQname(qname);
+		});
+
 		if (abstractdef.meta != null) {
 			result.meta = abstractdef.meta.map(m -> {
 				var params:Array<String> = null;
