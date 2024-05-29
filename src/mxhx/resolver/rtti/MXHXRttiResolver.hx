@@ -169,9 +169,12 @@ class MXHXRttiResolver implements IMXHXResolver {
 		}
 		switch (classTypeTree) {
 			case TClassdecl(classdef):
-				if (classdef.module != classdef.path) {
+				if (classdef.module != null && classdef.module != classdef.path) {
 					var lastDotIndex = classdef.path.lastIndexOf(".");
 					var moduleQname = classdef.module + "." + classdef.path.substr(lastDotIndex + 1);
+					if (classdef.params.length > 0) {
+						moduleQname += "<" + classdef.params.map(param -> "%").join(",") + ">";
+					}
 					var resolved = qnameToMXHXTypeSymbolLookup.get(moduleQname);
 					if (resolved != null) {
 						return resolved;
@@ -182,9 +185,12 @@ class MXHXRttiResolver implements IMXHXResolver {
 				}
 				return createMXHXClassSymbolForClassdef(classdef, params);
 			case TEnumdecl(enumdef):
-				if (enumdef.module != enumdef.path) {
+				if (enumdef.module != null && enumdef.module != enumdef.path) {
 					var lastDotIndex = enumdef.path.lastIndexOf(".");
 					var moduleQname = enumdef.module + "." + enumdef.path.substr(lastDotIndex + 1);
+					if (enumdef.params.length > 0) {
+						moduleQname += "<" + enumdef.params.map(param -> "%").join(",") + ">";
+					}
 					var resolved = qnameToMXHXTypeSymbolLookup.get(moduleQname);
 					if (resolved != null) {
 						return resolved;
