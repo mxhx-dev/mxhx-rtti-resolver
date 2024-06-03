@@ -371,7 +371,24 @@ class MXHXRttiGenerator {
 			mElement.set("n", metadataEntry.name);
 			if (metadataEntry.params != null) {
 				for (param in metadataEntry.params) {
+					#if (haxe_ver < 4.2)
+					var exprAsString = switch (param.expr) {
+						case EConst(CString(s, kind)):
+							switch (kind) {
+								case DoubleQuotes:
+									'"$s"';
+								case SingleQuotes:
+									'\'$s\'';
+							}
+						default:
+							// apparently, this didn't work for string constants
+							// prior to Haxe 4.2
+							ExprTools.toString({expr: param.expr, pos: null});
+					}
+					#else
 					var exprAsString = ExprTools.toString({expr: param.expr, pos: null});
+					#end
+
 					var eElement = Xml.createElement("e");
 					var pcData = Xml.createPCData(exprAsString);
 					eElement.addChild(pcData);
