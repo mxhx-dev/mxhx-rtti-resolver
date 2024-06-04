@@ -227,6 +227,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 			return null;
 		}
 		var x = Xml.parse(rtti).firstElement();
+		if (x == null) {
+			return null;
+		}
 		return new haxe.rtti.XmlParser().processElement(x);
 	}
 
@@ -252,6 +255,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}
 		}
 		var x = Xml.parse(rtti).firstElement();
+		if (x == null) {
+			return null;
+		}
 		return new haxe.rtti.XmlParser().processElement(x);
 	}
 
