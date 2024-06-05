@@ -166,6 +166,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 			} catch (e:Dynamic) {
 				return createMXHXClassSymbolForClass(resolvedClass, params);
 			}
+			if (classTypeTree == null) {
+				return createMXHXClassSymbolForClass(resolvedClass, params);
+			}
 		}
 		switch (classTypeTree) {
 			case TClassdecl(classdef):
