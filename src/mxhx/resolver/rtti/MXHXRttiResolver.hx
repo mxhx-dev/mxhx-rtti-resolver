@@ -237,7 +237,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 	}
 
 	private static function getTypeTree(c:Any):TypeTree {
-		var rtti = Reflect.field(c, "__rtti");
+		var rtti = Std.downcast(Reflect.field(c, "__rtti"), String);
 		if (rtti == null) {
 			var typeName = if ((c is Enum)) {
 				var e:Enum<Dynamic> = cast c;
