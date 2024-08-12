@@ -424,8 +424,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
-		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef)));
-		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef)));
+		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef, result)));
+		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef, result)));
 		result.fields = fields;
 		if (classdef.meta != null) {
 			result.meta = classdef.meta.map(m -> {
@@ -496,8 +496,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
-		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef)));
-		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef)));
+		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef, result)));
+		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef, result)));
 		result.fields = fields;
 		if (classdef.meta != null) {
 			result.meta = classdef.meta.map(m -> {
@@ -761,12 +761,12 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return null;
 	}
 
-	private function createMXHXFieldSymbolForTypeField(fieldName:String, isStatic:Bool):IMXHXFieldSymbol {
-		var result = new MXHXFieldSymbol(fieldName, null, false, true, isStatic);
+	private function createMXHXFieldSymbolForTypeField(fieldName:String, isStatic:Bool, owner:IMXHXTypeSymbol):IMXHXFieldSymbol {
+		var result = new MXHXFieldSymbol(fieldName, owner, null, false, true, isStatic);
 		return result;
 	}
 
-	private function createMXHXFieldSymbolForClassField(field:ClassField, isStatic:Bool, classdef:Classdef):IMXHXFieldSymbol {
+	private function createMXHXFieldSymbolForClassField(field:ClassField, isStatic:Bool, classdef:Classdef, owner:IMXHXTypeSymbol):IMXHXFieldSymbol {
 		var resolvedType:IMXHXTypeSymbol = null;
 		var typeQname = cTypeToQname(field.type);
 		if (typeQname != null) {
@@ -795,7 +795,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		};
 		var isPublic = field.isPublic;
 		var isStatic = isStatic;
-		var result = new MXHXFieldSymbol(field.name, resolvedType, isMethod, isPublic, isStatic);
+		var result = new MXHXFieldSymbol(field.name, owner, resolvedType, isMethod, isPublic, isStatic);
 		result.isReadable = isReadable;
 		result.isWritable = isWritable;
 		result.doc = field.doc;
