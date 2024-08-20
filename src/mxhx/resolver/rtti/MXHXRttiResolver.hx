@@ -130,6 +130,10 @@ class MXHXRttiResolver implements IMXHXResolver {
 		}
 		if (nameToResolve == "haxe.Constraints.Function") {
 			nameToResolve = "haxe.Function";
+			var resolved = qnameToMXHXTypeSymbolLookup.get(nameToResolve);
+			if (resolved != null) {
+				return resolved;
+			}
 		}
 		// these built-in abstracts don't resolve consistently across targets at runtime
 		switch (nameToResolve) {
