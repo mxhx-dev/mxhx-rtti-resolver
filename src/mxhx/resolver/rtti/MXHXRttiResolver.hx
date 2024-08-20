@@ -157,9 +157,6 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}
 		}
 		var resolvedClass = Type.resolveClass(nameToResolve);
-		if (nameToResolve == "() -> Void") {
-			trace("~~~~~ " + resolvedClass);
-		}
 		if (resolvedClass == null) {
 			// an abstract might not exist at runtime,
 			// but its rtti data may have been embedded
@@ -284,12 +281,17 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var retString = splitResult.ret;
 		var args = argStrings.map(function(argString):IMXHXArgumentSymbol {
 			var opt = argString.charAt(0) == "?";
-			var t = argString;
 			if (opt) {
-				t = t.substr(1);
+				argString = argString.substr(1);
 			}
-			var type = resolveQname(t);
-			return new MXHXArgumentSymbol(null, type, opt);
+			var argName:String = null;
+			var colonIndex = argString.indexOf(":");
+			if (colonIndex != -1) {
+				argName = argString.substring(0, colonIndex);
+				argString = argString.substring(colonIndex + 1);
+			}
+			var type = resolveQname(argString);
+			return new MXHXArgumentSymbol(argName, type, opt);
 		});
 		var ret = resolveQname(retString);
 
@@ -303,26 +305,32 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var argStrings:Array<String> = [];
 		var retString:String = null;
 		var funStack = 1;
+		var paramsStack = 0;
 		var pendingString = "";
 		for (i in 1...qname.length) {
 			var currentChar = qname.charAt(i);
-			if (currentChar == "(") {
+			if (currentChar == "<") {
+				paramsStack++;
+			} else if (currentChar == ">") {
+				paramsStack--;
+			} else if (currentChar == "(") {
 				funStack++;
-			}
-			if (currentChar == ")") {
+			} else if (currentChar == ")") {
 				funStack--;
 				if (funStack == 0) {
-					argStrings.push(StringTools.trim(pendingString));
+					pendingString = StringTools.trim(pendingString);
+					if (pendingString.length > 0) {
+						argStrings.push(pendingString);
+					}
 					retString = StringTools.trim(qname.substr(qname.indexOf(">", i + 1) + 1));
 					break;
 				}
-			}
-			if (currentChar == "," && funStack == 0) {
+			} else if (currentChar == "," && funStack == 1 && paramsStack == 0) {
 				argStrings.push(StringTools.trim(pendingString));
 				pendingString = "";
-			} else {
-				pendingString += currentChar;
+				continue;
 			}
+			pendingString += currentChar;
 		}
 		return {args: argStrings, ret: retString};
 	}
@@ -853,9 +861,6 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var typeQname = cTypeToQname(field.type);
 		if (typeQname != null) {
 			resolvedType = resolveQname(typeQname);
-		}
-		if (field.name == "funcTyped") {
-			trace("***** " + field.name, typeQname, field.type + " " + resolvedType);
 		}
 		var isMethod = false;
 		var isReadable = false;
