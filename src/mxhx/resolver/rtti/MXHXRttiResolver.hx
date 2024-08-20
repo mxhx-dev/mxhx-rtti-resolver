@@ -15,28 +15,31 @@
 package mxhx.resolver.rtti;
 
 import haxe.Resource;
+import haxe.macro.Expr.FunctionArg;
 import haxe.rtti.CType;
 import haxe.rtti.XmlParser;
+import mxhx.resolver.IMXHXResolver;
+import mxhx.resolver.MXHXResolvers;
+import mxhx.symbols.IMXHXAbstractSymbol;
+import mxhx.symbols.IMXHXArgumentSymbol;
+import mxhx.symbols.IMXHXClassSymbol;
+import mxhx.symbols.IMXHXEnumFieldSymbol;
+import mxhx.symbols.IMXHXEnumSymbol;
+import mxhx.symbols.IMXHXEventSymbol;
+import mxhx.symbols.IMXHXFieldSymbol;
+import mxhx.symbols.IMXHXFunctionTypeSymbol;
+import mxhx.symbols.IMXHXInterfaceSymbol;
+import mxhx.symbols.IMXHXSymbol;
+import mxhx.symbols.IMXHXTypeSymbol;
+import mxhx.symbols.MXHXSymbolTools;
 import mxhx.symbols.internal.MXHXAbstractSymbol;
 import mxhx.symbols.internal.MXHXArgumentSymbol;
 import mxhx.symbols.internal.MXHXClassSymbol;
 import mxhx.symbols.internal.MXHXEnumFieldSymbol;
 import mxhx.symbols.internal.MXHXEnumSymbol;
 import mxhx.symbols.internal.MXHXFieldSymbol;
+import mxhx.symbols.internal.MXHXFunctionTypeSymbol;
 import mxhx.symbols.internal.MXHXInterfaceSymbol;
-import mxhx.symbols.IMXHXArgumentSymbol;
-import mxhx.symbols.IMXHXAbstractSymbol;
-import mxhx.symbols.IMXHXClassSymbol;
-import mxhx.symbols.IMXHXEnumFieldSymbol;
-import mxhx.symbols.IMXHXEnumSymbol;
-import mxhx.symbols.IMXHXEventSymbol;
-import mxhx.symbols.IMXHXFieldSymbol;
-import mxhx.symbols.IMXHXInterfaceSymbol;
-import mxhx.resolver.IMXHXResolver;
-import mxhx.symbols.IMXHXSymbol;
-import mxhx.symbols.IMXHXTypeSymbol;
-import mxhx.resolver.MXHXResolvers;
-import mxhx.symbols.MXHXSymbolTools;
 
 /**
 	An MXHX resolver that uses the [Haxe Runtime Type Information](https://haxe.org/manual/cr-rtti.html)
@@ -134,6 +137,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 				return createMXHXAbstractSymbolForBuiltin(nameToResolve, params);
 			default:
 		}
+		if (nameToResolve.charAt(0) == "(") {
+			return createMXHXFunctionTypeSymbolFromQname(nameToResolve);
+		}
 		var classTypeTree:TypeTree = null;
 		var resolvedEnum = Type.resolveEnum(nameToResolve);
 		if ((resolvedEnum is Enum)) {
@@ -151,6 +157,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}
 		}
 		var resolvedClass = Type.resolveClass(nameToResolve);
+		if (nameToResolve == "() -> Void") {
+			trace("~~~~~ " + resolvedClass);
+		}
 		if (resolvedClass == null) {
 			// an abstract might not exist at runtime,
 			// but its rtti data may have been embedded
@@ -267,6 +276,55 @@ class MXHXRttiResolver implements IMXHXResolver {
 			return null;
 		}
 		return new haxe.rtti.XmlParser().processElement(x);
+	}
+
+	private function createMXHXFunctionTypeSymbolFromQname(qname:String):IMXHXFunctionTypeSymbol {
+		var splitResult = splitFunctionTypeQname(qname);
+		var argStrings = splitResult.args;
+		var retString = splitResult.ret;
+		var args = argStrings.map(function(argString):IMXHXArgumentSymbol {
+			var opt = argString.charAt(0) == "?";
+			var t = argString;
+			if (opt) {
+				t = t.substr(1);
+			}
+			var type = resolveQname(t);
+			return new MXHXArgumentSymbol(null, type, opt);
+		});
+		var ret = resolveQname(retString);
+
+		var functionType = new MXHXFunctionTypeSymbol(qname, args, ret);
+		functionType.qname = qname;
+		qnameToMXHXTypeSymbolLookup.set(qname, functionType);
+		return functionType;
+	}
+
+	private static function splitFunctionTypeQname(qname:String):{args:Array<String>, ret:String} {
+		var argStrings:Array<String> = [];
+		var retString:String = null;
+		var funStack = 1;
+		var pendingString = "";
+		for (i in 1...qname.length) {
+			var currentChar = qname.charAt(i);
+			if (currentChar == "(") {
+				funStack++;
+			}
+			if (currentChar == ")") {
+				funStack--;
+				if (funStack == 0) {
+					argStrings.push(StringTools.trim(pendingString));
+					retString = StringTools.trim(qname.substr(qname.indexOf(">", i + 1) + 1));
+					break;
+				}
+			}
+			if (currentChar == "," && funStack == 0) {
+				argStrings.push(StringTools.trim(pendingString));
+				pendingString = "";
+			} else {
+				pendingString += currentChar;
+			}
+		}
+		return {args: argStrings, ret: retString};
 	}
 
 	public function getTagNamesForQname(qnameToFind:String):Map<String, String> {
@@ -717,6 +775,29 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return result;
 	}
 
+	private function functionArgsAndRetToQname(args:Array<FunctionArgument>, ret:CType):String {
+		var qname = '(';
+		for (i in 0...args.length) {
+			var arg = args[i];
+			if (i > 0) {
+				qname += ', ';
+			}
+			if (arg.opt) {
+				qname += '?';
+			}
+			// qname += arg.name;
+			// qname += ':';
+			var argTypeName = cTypeToQname(arg.t);
+			if (argTypeName == null) {
+				argTypeName = "Dynamic";
+			}
+			qname += argTypeName;
+		}
+		qname += ') -> ';
+		qname += cTypeToQname(ret);
+		return qname;
+	}
+
 	private function cTypeToQname(ctype:CType):String {
 		var ctypeName:String = null;
 		var ctypeParams:Array<CType> = null;
@@ -734,7 +815,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 				ctypeName = name;
 				ctypeParams = params;
 			case CFunction(args, ret):
-				return "haxe.Function";
+				// return "haxe.Function";
+				return functionArgsAndRetToQname(args, ret);
 			case CDynamic(t):
 				return "Dynamic";
 			case CAnonymous(fields):
@@ -771,6 +853,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var typeQname = cTypeToQname(field.type);
 		if (typeQname != null) {
 			resolvedType = resolveQname(typeQname);
+		}
+		if (field.name == "funcTyped") {
+			trace("***** " + field.name, typeQname, field.type + " " + resolvedType);
 		}
 		var isMethod = false;
 		var isReadable = false;

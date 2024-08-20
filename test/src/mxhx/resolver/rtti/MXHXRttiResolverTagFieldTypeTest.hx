@@ -6,6 +6,7 @@ import mxhx.symbols.IMXHXAbstractSymbol;
 import mxhx.symbols.IMXHXClassSymbol;
 import mxhx.symbols.IMXHXEnumSymbol;
 import mxhx.symbols.IMXHXFieldSymbol;
+import mxhx.symbols.IMXHXFunctionTypeSymbol;
 import mxhx.symbols.IMXHXInterfaceSymbol;
 import utest.Assert;
 import utest.Test;
@@ -223,8 +224,8 @@ class MXHXRttiResolverTagFieldTypeTest extends Test {
 		Assert.isOfType(resolved, IMXHXFieldSymbol);
 		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
 		Assert.notNull(fieldSymbol.type);
-		Assert.isOfType(fieldSymbol.type, IMXHXAbstractSymbol);
-		Assert.equals("haxe.Function", fieldSymbol.type.qname);
+		Assert.isOfType(fieldSymbol.type, IMXHXFunctionTypeSymbol);
+		Assert.equals("() -> Void", fieldSymbol.type.qname);
 	}
 
 	public function testResolveFieldTypeInt():Void {

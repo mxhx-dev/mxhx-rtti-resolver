@@ -4,6 +4,7 @@ import haxe.Resource;
 import mxhx.symbols.IMXHXAbstractSymbol;
 import mxhx.symbols.IMXHXClassSymbol;
 import mxhx.symbols.IMXHXEnumSymbol;
+import mxhx.symbols.IMXHXFunctionTypeSymbol;
 import mxhx.symbols.IMXHXInterfaceSymbol;
 import utest.Assert;
 import utest.Test;
@@ -135,8 +136,8 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "funcTyped");
 		Assert.notNull(resolvedField);
 		Assert.notNull(resolvedField.type);
-		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
-		Assert.equals("haxe.Function", resolvedField.type.qname);
+		Assert.isOfType(resolvedField.type, IMXHXFunctionTypeSymbol);
+		Assert.equals("() -> Void", resolvedField.type.qname);
 	}
 
 	public function testResolveIntField():Void {
