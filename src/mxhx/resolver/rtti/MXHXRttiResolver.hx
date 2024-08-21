@@ -305,40 +305,6 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return functionType;
 	}
 
-	private static function splitFunctionTypeQname(qname:String):{args:Array<String>, ret:String} {
-		var argStrings:Array<String> = [];
-		var retString:String = null;
-		var funStack = 1;
-		var paramsStack = 0;
-		var pendingString = "";
-		for (i in 1...qname.length) {
-			var currentChar = qname.charAt(i);
-			if (currentChar == "<") {
-				paramsStack++;
-			} else if (currentChar == ">") {
-				paramsStack--;
-			} else if (currentChar == "(") {
-				funStack++;
-			} else if (currentChar == ")") {
-				funStack--;
-				if (funStack == 0) {
-					pendingString = StringTools.trim(pendingString);
-					if (pendingString.length > 0) {
-						argStrings.push(pendingString);
-					}
-					retString = StringTools.trim(qname.substr(qname.indexOf(">", i + 1) + 1));
-					break;
-				}
-			} else if (currentChar == "," && funStack == 1 && paramsStack == 0) {
-				argStrings.push(StringTools.trim(pendingString));
-				pendingString = "";
-				continue;
-			}
-			pendingString += currentChar;
-		}
-		return {args: argStrings, ret: retString};
-	}
-
 	public function getTagNamesForQname(qnameToFind:String):Map<String, String> {
 		var result:Map<String, String> = [];
 		for (uri => mappings in manifests) {
@@ -912,46 +878,76 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return result;
 	}
 
-	private function qnameToParams(qname:String, paramsIndex:Int):Array<IMXHXTypeSymbol> {
-		var params:Array<IMXHXTypeSymbol> = null;
-		var paramsString = qname.substring(paramsIndex + 1, qname.length - 1);
-		if (paramsString.length > 0) {
-			params = [];
-			var startIndex = 0;
-			var searchIndex = 0;
-			var stackSize = 0;
-			while (startIndex < paramsString.length) {
-				var nextLeftBracketIndex = paramsString.indexOf("<", searchIndex);
-				var nextRightBracketIndex = paramsString.indexOf(">", searchIndex);
-				var nextCommaIndex = paramsString.indexOf(",", searchIndex);
-				if (nextRightBracketIndex != -1
-					&& ((nextCommaIndex == -1 && nextLeftBracketIndex == -1)
-						|| (nextLeftBracketIndex != -1 && nextRightBracketIndex < nextLeftBracketIndex)
-						|| (nextCommaIndex != -1 && nextRightBracketIndex < nextCommaIndex))) {
-					stackSize--;
-					searchIndex = nextRightBracketIndex + 1;
-				} else if (nextLeftBracketIndex != -1
-					&& ((nextCommaIndex == -1 && nextLeftBracketIndex == -1)
-						|| (nextCommaIndex != -1 && nextLeftBracketIndex < nextCommaIndex)
-						|| (nextRightBracketIndex != -1 && nextLeftBracketIndex < nextRightBracketIndex))) {
-					stackSize++;
-					searchIndex = nextLeftBracketIndex + 1;
-				} else if (nextCommaIndex != -1) {
-					searchIndex = nextCommaIndex + 1;
-					if (stackSize == 0) {
-						var qname = paramsString.substring(startIndex, nextCommaIndex);
-						params.push(resolveQname(qname));
-						startIndex = searchIndex;
+	private function qnameToParams(qname:String, startIndex:Int):Array<IMXHXTypeSymbol> {
+		var params:Array<IMXHXTypeSymbol> = [];
+		var paramsStack = 1;
+		var funArgsStack = 0;
+		var funRetPending = false;
+		var pendingStringStart = startIndex + 1;
+		for (i in pendingStringStart...qname.length) {
+			var currentChar = qname.charAt(i);
+			if (currentChar == "<") {
+				paramsStack++;
+			} else if (currentChar == ">") {
+				if (!funRetPending) {
+					paramsStack--;
+					if (paramsStack == 0) {
+						var pendingString = StringTools.trim(qname.substring(pendingStringStart, i));
+						if (pendingString.length > 0) {
+							params.push(resolveQname(pendingString));
+						}
+						break;
 					}
 				} else {
-					var qname = paramsString.substring(startIndex);
-					params.push(resolveQname(qname));
-					searchIndex = paramsString.length;
-					startIndex = searchIndex;
+					funRetPending = false;
 				}
+			} else if (currentChar == "(") {
+				funArgsStack++;
+			} else if (currentChar == ")") {
+				funArgsStack--;
+				funRetPending = true;
+			} else if (currentChar == "," && funArgsStack == 0 && paramsStack == 1) {
+				var pendingString = StringTools.trim(qname.substring(pendingStringStart, i));
+				params.push(resolveQname(pendingString));
+				pendingStringStart = i + 1;
+				continue;
 			}
 		}
 		return params;
+	}
+
+	private static function splitFunctionTypeQname(qname:String):{args:Array<String>, ret:String} {
+		var argStrings:Array<String> = [];
+		var retString:String = null;
+		var funStack = 1;
+		var paramsStack = 0;
+		var pendingStringStart = 1;
+		for (i in pendingStringStart...qname.length) {
+			var currentChar = qname.charAt(i);
+			if (currentChar == "<") {
+				paramsStack++;
+			} else if (currentChar == ">") {
+				paramsStack--;
+			} else if (currentChar == "(") {
+				funStack++;
+			} else if (currentChar == ")") {
+				funStack--;
+				if (funStack == 0) {
+					var pendingString = StringTools.trim(qname.substring(pendingStringStart, i));
+					if (pendingString.length > 0) {
+						argStrings.push(pendingString);
+					}
+					retString = StringTools.trim(qname.substr(qname.indexOf(">", i + 1) + 1));
+					break;
+				}
+			} else if (currentChar == "," && funStack == 1 && paramsStack == 0) {
+				var pendingString = StringTools.trim(qname.substring(pendingStringStart, i));
+				argStrings.push(pendingString);
+				pendingStringStart = i + 1;
+				continue;
+			}
+		}
+		return {args: argStrings, ret: retString};
 	}
 
 	private function resolveParentTag(tagData:IMXHXTagData):IMXHXSymbol {
