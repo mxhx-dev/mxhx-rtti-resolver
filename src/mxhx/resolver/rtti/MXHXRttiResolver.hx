@@ -805,8 +805,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}
 			qname += argTypeName;
 		}
-		qname += ') -> ';
-		qname += cTypeToQname(ret);
+		var retName = cTypeToQname(ret);
+		if (retName == null) {
+			retName = "Dynamic";
+		}
+		qname += ') -> ${retName}';
 		return qname;
 	}
 
