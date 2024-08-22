@@ -127,6 +127,16 @@ class MXHXRttiResolver implements IMXHXResolver {
 		if (paramsStart != -1) {
 			nameToResolve = qname.substr(0, paramsStart);
 			params = qnameToParams(qname, paramsStart);
+			// unlike the macro resolver, we can't easily detect when a qname
+			// represents a type parameter because type parameters are
+			// CType.CClass, like regular classes.
+			// but qnameToParams() will return null for type parameters, so
+			// we can check the cache again.
+			qname = '$nameToResolve<${params.map(param -> param != null ? param.qname : "%").join(",")}>';
+			var resolved = qnameToMXHXTypeSymbolLookup.get(qname);
+			if (resolved != null) {
+				return resolved;
+			}
 		}
 		if (nameToResolve == "haxe.Constraints.Function") {
 			nameToResolve = "haxe.Function";
