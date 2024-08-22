@@ -369,7 +369,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 			moduleName = pack.join(".") + "." + name;
 		}
 		qname = MXHXResolverTools.definitionToQname(name, pack, moduleName, params.map(param -> param != null ? param.qname : null));
-		var result = new MXHXAbstractSymbol(name, [], params);
+		var result = new MXHXAbstractSymbol(name, pack, params);
 		result.qname = qname;
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
