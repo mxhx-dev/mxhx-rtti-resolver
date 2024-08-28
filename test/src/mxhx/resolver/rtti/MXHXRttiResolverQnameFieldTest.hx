@@ -261,4 +261,24 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		// TODO: fix the % that should be used only internally
 		Assert.equals("Array<%>", resolvedField.type.qname);
 	}
+
+	public function testResolveMethodField():Void {
+		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.TestPropertiesClass");
+		Assert.notNull(resolvedClass);
+		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "testMethod");
+		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isMethod);
+		Assert.isFalse(resolvedField.isWritable);
+	}
+
+	public function testResolveDynamicMethodField():Void {
+		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.TestPropertiesClass");
+		Assert.notNull(resolvedClass);
+		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "testDynamicMethod");
+		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isMethod);
+		Assert.isTrue(resolvedField.isWritable);
+	}
 }

@@ -37,4 +37,6 @@ class TestPropertiesClass implements ITestPropertiesInterface {
 
 	// for testing properties typed as functions
 	public function testMethod():Void {}
+
+	public dynamic function testDynamicMethod():Void {}
 }

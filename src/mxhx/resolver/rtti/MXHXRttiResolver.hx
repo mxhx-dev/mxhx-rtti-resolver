@@ -851,6 +851,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		switch (field.get) {
 			case RMethod:
 				isMethod = true;
+			case RDynamic:
+				isMethod = true;
 			case RNormal:
 				isReadable = true;
 			case RCall("accessor"):
@@ -860,6 +862,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 		switch (field.set) {
 			case RMethod:
 				isMethod = true;
+			case RDynamic:
+				isMethod = true;
+				isWritable = true;
 			case RNormal:
 				isWritable = true;
 			case RCall("accessor"):
