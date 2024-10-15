@@ -1,5 +1,6 @@
 package mxhx.resolver.rtti;
 
+import mxhx.symbols.IMXHXAbstractSymbol;
 import haxe.Resource;
 import mxhx.symbols.IMXHXClassSymbol;
 import mxhx.symbols.IMXHXInterfaceSymbol;
@@ -110,5 +111,28 @@ class MXHXRttiResolverQnameTest extends Test {
 		Assert.notNull(resolved);
 		Assert.isOfType(resolved, IMXHXInterfaceSymbol);
 		Assert.equals("fixtures.ITestPropertiesInterface", resolved.qname);
+	}
+
+	public function testResolveAbstractFrom():Void {
+		var resolved = resolver.resolveQname("fixtures.TestAbstractFrom");
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXAbstractSymbol);
+		Assert.equals("fixtures.TestAbstractFrom", resolved.qname);
+		var resolvedAbstract:IMXHXAbstractSymbol = cast resolved;
+		Assert.notNull(resolvedAbstract.impl);
+		Assert.equals("fixtures._TestAbstractFrom.TestAbstractFrom_Impl_", resolvedAbstract.impl.qname);
+	}
+
+	public function testResolveAbstractFromModuleType():Void {
+		var resolved = resolver.resolveQname("fixtures.TestAbstractFromModuleType");
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXAbstractSymbol);
+		Assert.equals("fixtures.TestAbstractFromModuleType", resolved.qname);
+		var resolvedAbstract:IMXHXAbstractSymbol = cast resolved;
+		Assert.notNull(resolvedAbstract.impl);
+		Assert.equals("fixtures._TestAbstractFromModuleType.TestAbstractFromModuleType_Impl_", resolvedAbstract.impl.qname);
+		var fromFloat = Lambda.find(resolvedAbstract.impl.fields, field -> field.name == "fromFloat");
+		Assert.notNull(fromFloat);
+		Assert.equals("fromFloat", fromFloat.name);
 	}
 }

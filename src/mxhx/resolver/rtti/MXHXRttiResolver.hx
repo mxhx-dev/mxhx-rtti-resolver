@@ -15,12 +15,12 @@
 package mxhx.resolver.rtti;
 
 import haxe.Resource;
-import haxe.macro.Expr.FunctionArg;
 import haxe.rtti.CType;
 import haxe.rtti.XmlParser;
 import mxhx.resolver.IMXHXResolver;
 import mxhx.resolver.MXHXResolvers;
 import mxhx.symbols.IMXHXAbstractSymbol;
+import mxhx.symbols.IMXHXAbstractToOrFromInfo;
 import mxhx.symbols.IMXHXArgumentSymbol;
 import mxhx.symbols.IMXHXClassSymbol;
 import mxhx.symbols.IMXHXEnumFieldSymbol;
@@ -33,6 +33,7 @@ import mxhx.symbols.IMXHXSymbol;
 import mxhx.symbols.IMXHXTypeSymbol;
 import mxhx.symbols.MXHXSymbolTools;
 import mxhx.symbols.internal.MXHXAbstractSymbol;
+import mxhx.symbols.internal.MXHXAbstractToOrFromInfo;
 import mxhx.symbols.internal.MXHXArgumentSymbol;
 import mxhx.symbols.internal.MXHXClassSymbol;
 import mxhx.symbols.internal.MXHXEnumFieldSymbol;
@@ -206,7 +207,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 				if (classdef.isInterface) {
 					return createMXHXInterfaceSymbolForClassdef(classdef, params);
 				}
-				return createMXHXClassSymbolForClassdef(classdef, params);
+				return createMXHXClassSymbolForClassdef(classdef, params, false);
 			case TEnumdecl(enumdef):
 				if (enumdef.module != null && enumdef.module != enumdef.path) {
 					var lastDotIndex = enumdef.path.lastIndexOf(".");
@@ -425,7 +426,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return result;
 	}
 
-	private function createMXHXClassSymbolForClassdef(classdef:Classdef, params:Array<IMXHXTypeSymbol>):IMXHXClassSymbol {
+	private function createMXHXClassSymbolForClassdef(classdef:Classdef, params:Array<IMXHXTypeSymbol>, abstractImpl:Bool):IMXHXClassSymbol {
 		var name = classdef.path;
 		var dotIndex = name.lastIndexOf(".");
 		var pack:Array<String> = [];
@@ -435,7 +436,10 @@ class MXHXRttiResolver implements IMXHXResolver {
 			name = name.substr(dotIndex + 1);
 		}
 		var moduleName = classdef.module;
-		if (moduleName == null) {
+		// if it's the implementation of an abstract, the module property will
+		// point to the abstract, but the path will be more technically correct
+		// because it rewrites the abstract name to start with a _ character
+		if (moduleName == null || abstractImpl) {
 			moduleName = classdef.path;
 		}
 		var qname = MXHXResolverTools.definitionToQname(name, pack, moduleName,
@@ -739,14 +743,38 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var typeQname = cTypeToQname(abstractdef.athis);
 		result.type = resolveQname(typeQname);
 
-		result.from = abstractdef.from.map(from -> {
-			var qname = cTypeToQname(from.t);
-			return resolveQname(qname);
+		if (abstractdef.impl != null) {
+			result.impl = createMXHXClassSymbolForClassdef(abstractdef.impl, [], true);
+		}
+
+		result.from = abstractdef.from.map(function(from):IMXHXAbstractToOrFromInfo {
+			var fromQname:String = null;
+			switch (from.t) {
+				case CClass(name, params):
+					if (StringTools.startsWith(name, from.field + ".")) {
+						fromQname = "Dynamic";
+					}
+				default:
+			}
+			if (fromQname == null) {
+				fromQname = cTypeToQname(from.t);
+			}
+			var resolvedField:IMXHXFieldSymbol = null;
+			if (result.impl != null) {
+				resolvedField = Lambda.find(result.impl.fields, fieldSymbol -> fieldSymbol.isStatic && fieldSymbol.name == from.field);
+			}
+			var resolvedType = resolveQname(fromQname);
+			return new MXHXAbstractToOrFromInfo(resolvedField, resolvedType);
 		});
 
-		result.to = abstractdef.to.map(to -> {
+		result.to = abstractdef.to.map(function(to):IMXHXAbstractToOrFromInfo {
 			var qname = cTypeToQname(to.t);
-			return resolveQname(qname);
+			var resolvedField:IMXHXFieldSymbol = null;
+			if (result.impl != null) {
+				resolvedField = Lambda.find(result.impl.fields, fieldSymbol -> fieldSymbol.isStatic && fieldSymbol.name == to.field);
+			}
+			var resolvedType = resolveQname(qname);
+			return new MXHXAbstractToOrFromInfo(resolvedField, resolvedType);
 		});
 
 		if (abstractdef.meta != null) {
