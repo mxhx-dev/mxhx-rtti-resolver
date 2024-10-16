@@ -120,24 +120,32 @@ class MXHXRttiGenerator {
 					}
 					switch (staticField.type) {
 						case TFun(args, ret):
+							var fieldName = abstractType.name + "___" + staticField.name;
+							if (abstractType.pack.length > 0) {
+								fieldName = abstractType.pack.join("_") + "__" + fieldName;
+							}
+							// we'll try to keep the arg and return types the
+							// same, but sometimes they don't resolve because
+							// the imports are aliased, or the method has type
+							// parameters, so include a fall back to Dynamic.
 							var complexRet:ComplexType = Context.toComplexType(ret);
 							try {
 								var resolvedType = Context.resolveType(complexRet, Context.currentPos());
 								if (resolvedType == null) {
-									complexRet = null;
+									complexRet = TPath({pack: [], name: "Dynamic"});
 								}
 							} catch (e:Dynamic) {
-								continue;
+								complexRet = TPath({pack: [], name: "Dynamic"});
 							}
 							var complexArgs:Array<FunctionArg> = args.map(function(arg):FunctionArg {
 								var complexArg = Context.toComplexType(arg.t);
 								try {
 									var resolvedType = Context.resolveType(complexArg, Context.currentPos());
 									if (resolvedType == null) {
-										complexArg = null;
+										complexArg = TPath({pack: [], name: "Dynamic"});
 									}
 								} catch (e:Dynamic) {
-									complexArg = null;
+									complexArg = TPath({pack: [], name: "Dynamic"});
 								}
 								return {
 									name: arg.name,
@@ -145,19 +153,12 @@ class MXHXRttiGenerator {
 									type: complexArg
 								}
 							});
-							if (!Lambda.foreach(complexArgs, complexArg -> complexArg.type != null)) {
-								continue;
-							}
 							var qname = MXHXResolverTools.definitionToQname(abstractType.name, abstractType.pack, abstractType.module);
 							var methodPath = qname.split(".").concat([staticField.name]);
 							var fun:Function = {
 								args: complexArgs,
 								ret: complexRet,
-								expr: macro return $p{methodPath}($i{args[0].name})
-							}
-							var fieldName = abstractType.name + "___" + staticField.name;
-							if (abstractType.pack.length > 0) {
-								fieldName = abstractType.pack.join("_") + "__" + fieldName;
+								expr: macro return @:privateAccess $p{methodPath}($i{args[0].name})
 							}
 							fields.push({
 								name: fieldName,
