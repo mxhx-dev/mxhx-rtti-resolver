@@ -40,12 +40,27 @@ class MXHXRttiGenerator {
 	public static function generate():Void {
 		Context.onAfterTyping((modules:Array<ModuleType>) -> {
 			final isFlash = Context.defined("flash");
+			var hasMXHXRttiAbstracts = try {
+				Context.getType("mxhx.resolver.rtti._internal.MXHXRttiAbstracts");
+				true;
+			} catch (e:Dynamic) {
+				false;
+			}
 			var rttiData:Array<Xml> = [];
-			for (mod in modules) {
-				switch (mod) {
+			var abstractFromFields:Array<Field> = [];
+			for (module in modules) {
+				switch (module) {
 					case TClassDecl(c):
 						if (isFlash) {
 							var classType = c.get();
+							if (classType.name == "MXHXRttiAbstracts"
+								&& classType.pack.length == 4
+								&& classType.pack[0] == "mxhx"
+								&& classType.pack[1] == "resolver"
+								&& classType.pack[2] == "rtti"
+								&& classType.pack[3] == "_internal") {
+								continue;
+							}
 							if (classType.pack.length > 0 && classType.pack[0] == "flash" && classType.meta.has(":rtti")) {
 								var classRtti = createRttiForClassType(classType, []);
 								rttiData.push(classRtti);
@@ -56,6 +71,9 @@ class MXHXRttiGenerator {
 						if (abstractType.meta.has(":rtti")) {
 							var abstractRtti = createRttiForAbstractType(abstractType, []);
 							rttiData.push(abstractRtti);
+							if (!hasMXHXRttiAbstracts) {
+								createFromFieldsForAbstractType(abstractType, abstractFromFields);
+							}
 						}
 					case TEnumDecl(e):
 						var enumType = e.get();
@@ -76,7 +94,88 @@ class MXHXRttiGenerator {
 				var bytes = Bytes.ofString(Std.string(rtti));
 				Context.addResource('__mxhxRtti_${rtti.get("path")}', bytes);
 			}
+			if (!hasMXHXRttiAbstracts) {
+				var rttiAbstracts:TypeDefinition = {
+					name: "MXHXRttiAbstracts",
+					pack: ["mxhx", "resolver", "rtti", "_internal"],
+					pos: Context.currentPos(),
+					kind: TDClass(),
+					fields: abstractFromFields
+				};
+				Context.defineType(rttiAbstracts);
+			}
 		});
+	}
+
+	private static function createFromFieldsForAbstractType(abstractType:AbstractType, fields:Array<Field>):Void {
+		if (abstractType.impl == null) {
+			return;
+		}
+		var statics = abstractType.impl.get().statics.get();
+		for (staticField in statics) {
+			switch (staticField.kind) {
+				case FMethod(MethNormal):
+					if (!staticField.meta.has(":from")) {
+						continue;
+					}
+					switch (staticField.type) {
+						case TFun(args, ret):
+							var complexRet:ComplexType = Context.toComplexType(ret);
+							try {
+								var resolvedType = Context.resolveType(complexRet, Context.currentPos());
+								if (resolvedType == null) {
+									complexRet = null;
+								}
+							} catch (e:Dynamic) {
+								continue;
+							}
+							var complexArgs:Array<FunctionArg> = args.map(function(arg):FunctionArg {
+								var complexArg = Context.toComplexType(arg.t);
+								try {
+									var resolvedType = Context.resolveType(complexArg, Context.currentPos());
+									if (resolvedType == null) {
+										complexArg = null;
+									}
+								} catch (e:Dynamic) {
+									complexArg = null;
+								}
+								return {
+									name: arg.name,
+									opt: arg.opt,
+									type: complexArg
+								}
+							});
+							if (!Lambda.foreach(complexArgs, complexArg -> complexArg.type != null)) {
+								continue;
+							}
+							var qname = MXHXResolverTools.definitionToQname(abstractType.name, abstractType.pack, abstractType.module);
+							var methodPath = qname.split(".").concat([staticField.name]);
+							var fun:Function = {
+								args: complexArgs,
+								ret: complexRet,
+								expr: macro return $p{methodPath}($i{args[0].name})
+							}
+							var fieldName = abstractType.name + "___" + staticField.name;
+							if (abstractType.pack.length > 0) {
+								fieldName = abstractType.pack.join("_") + "__" + fieldName;
+							}
+							fields.push({
+								name: fieldName,
+								pos: Context.currentPos(),
+								kind: FFun(fun),
+								access: [APublic, AStatic],
+								meta: [
+									{
+										name: ":noCompletion",
+										pos: Context.currentPos(),
+									}
+								]
+							});
+						default:
+					}
+				default:
+			}
+		}
 	}
 	#end
 
