@@ -39,6 +39,9 @@ class MXHXRttiResolverQnameTest extends Test {
 		var resolved = resolver.resolveQname("Array");
 		Assert.notNull(resolved);
 		Assert.equals("Array", resolved.qname);
+		Assert.notNull(resolved.paramNames);
+		Assert.equals(1, resolved.paramNames.length);
+		Assert.equals("T", resolved.paramNames[0]);
 	}
 
 	public function testResolveBool():Void {

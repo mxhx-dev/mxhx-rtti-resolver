@@ -75,6 +75,9 @@ class MXHXRttiResolverTagFieldTypeTest extends Test {
 		Assert.notNull(fieldSymbol.type);
 		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
 		Assert.equals("Array<String>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
 	}
 
 	public function testResolveFieldTypeBool():Void {

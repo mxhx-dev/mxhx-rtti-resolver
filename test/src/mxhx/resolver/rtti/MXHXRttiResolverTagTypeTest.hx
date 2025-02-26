@@ -75,6 +75,9 @@ class MXHXRttiResolverTagTypeTest extends Test {
 		Assert.isOfType(resolved, IMXHXTypeSymbol);
 		var typeSymbol:IMXHXTypeSymbol = cast resolved;
 		Assert.equals("Array<Float>", typeSymbol.qname);
+		Assert.notNull(typeSymbol.paramNames);
+		Assert.equals(1, typeSymbol.paramNames.length);
+		Assert.equals("T", typeSymbol.paramNames[0]);
 	}
 
 	public function testResolveDeclarationsBool():Void {

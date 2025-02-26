@@ -51,6 +51,9 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("Array<String>", resolvedField.type.qname);
+		Assert.notNull(resolvedField.type.paramNames);
+		Assert.equals(1, resolvedField.type.paramNames.length);
+		Assert.equals("T", resolvedField.type.paramNames[0]);
 	}
 
 	public function testResolveBoolField():Void {
@@ -255,12 +258,18 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.ArrayCollection");
 		Assert.notNull(resolvedClass);
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		Assert.notNull(resolvedClass.paramNames);
+		Assert.equals(1, resolvedClass.paramNames.length);
+		Assert.equals("T", resolvedClass.paramNames[0]);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "array");
 		Assert.notNull(resolvedField);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		// TODO: fix the % that should be used only internally
 		Assert.equals("Array<%>", resolvedField.type.qname);
+		Assert.notNull(resolvedField.type.paramNames);
+		Assert.equals(1, resolvedField.type.paramNames.length);
+		Assert.equals("T", resolvedField.type.paramNames[0]);
 	}
 
 	public function testResolveMethodField():Void {

@@ -437,6 +437,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}
 			result.superClass = cast(classType, IMXHXClassSymbol);
 		}
+		result.paramNames = pack.length == 0 && name == "Array" ? ["T"] : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
 		// fields = fields.concat(Type.getInstanceFields(resolvedClass).map(field -> createMXHXFieldSymbolForTypeField(field, false)));
 		// fields = fields.concat(Type.getClassFields(resolvedClass).map(field -> createMXHXFieldSymbolForTypeField(field, true)));
