@@ -35,10 +35,19 @@ class MXHXRttiResolverQnameTest extends Test {
 		Assert.equals("Any", resolved.qname);
 	}
 
-	public function testResolveArray():Void {
+	public function testResolveArrayWithoutParameter():Void {
 		var resolved = resolver.resolveQname("Array");
 		Assert.notNull(resolved);
 		Assert.equals("Array", resolved.qname);
+		Assert.notNull(resolved.paramNames);
+		Assert.equals(1, resolved.paramNames.length);
+		Assert.equals("T", resolved.paramNames[0]);
+	}
+
+	public function testResolveArrayWithParameter():Void {
+		var resolved = resolver.resolveQname("Array<Float>");
+		Assert.notNull(resolved);
+		Assert.equals("Array<Float>", resolved.qname);
 		Assert.notNull(resolved.paramNames);
 		Assert.equals(1, resolved.paramNames.length);
 		Assert.equals("T", resolved.paramNames[0]);
@@ -138,5 +147,32 @@ class MXHXRttiResolverQnameTest extends Test {
 		var fromFloat = Lambda.find(resolvedAbstract.impl.fields, field -> field.name == "fromFloat");
 		Assert.notNull(fromFloat);
 		Assert.equals("fromFloat", fromFloat.name);
+	}
+
+	public function testResolveGenericWithoutParameter():Void {
+		var resolved = resolver.resolveQname("fixtures.ArrayCollection");
+		Assert.notNull(resolved);
+		Assert.equals("fixtures.ArrayCollection", resolved.qname);
+
+		Assert.notNull(resolved.params);
+		Assert.equals(0, resolved.params.length);
+
+		Assert.notNull(resolved.paramNames);
+		Assert.equals(1, resolved.paramNames.length);
+		Assert.equals("T", resolved.paramNames[0]);
+	}
+
+	public function testResolveGenericWithParameter():Void {
+		var resolved = resolver.resolveQname("fixtures.ArrayCollection<Float>");
+		Assert.notNull(resolved);
+		Assert.equals("fixtures.ArrayCollection<Float>", resolved.qname);
+
+		Assert.notNull(resolved.params);
+		Assert.equals(1, resolved.params.length);
+		Assert.equals("Float", resolved.params[0].qname);
+
+		Assert.notNull(resolved.paramNames);
+		Assert.equals(1, resolved.paramNames.length);
+		Assert.equals("T", resolved.paramNames[0]);
 	}
 }
