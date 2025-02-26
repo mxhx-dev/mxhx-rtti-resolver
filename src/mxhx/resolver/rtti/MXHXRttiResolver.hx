@@ -328,6 +328,10 @@ class MXHXRttiResolver implements IMXHXResolver {
 	}
 
 	public function getParamsForQname(qnameToFind:String):Array<String> {
+		var index = qnameToFind.indexOf("<");
+		if (index != -1) {
+			qnameToFind = qnameToFind.substr(0, index);
+		}
 		for (uri => mappings in manifests) {
 			for (tagName => manifestEntry in mappings) {
 				if (manifestEntry.qname == qnameToFind) {
