@@ -17,6 +17,7 @@ package mxhx.resolver.rtti;
 import haxe.Resource;
 import haxe.rtti.CType;
 import haxe.rtti.XmlParser;
+import mxhx.manifest.MXHXManifestEntry;
 import mxhx.resolver.IMXHXResolver;
 import mxhx.resolver.MXHXResolvers;
 import mxhx.symbols.IMXHXAbstractSymbol;
@@ -47,8 +48,6 @@ import mxhx.symbols.internal.MXHXInterfaceSymbol;
 	to resolve symbols.
 **/
 class MXHXRttiResolver implements IMXHXResolver {
-	private static final TYPE_ARRAY = "Array";
-	private static final ATTRIBUTE_TYPE = "type";
 	private static final META_ENUM = ":enum";
 	private static final META_DEFAULT_XML_PROPERTY = "defaultXmlProperty";
 
@@ -56,10 +55,10 @@ class MXHXRttiResolver implements IMXHXResolver {
 		manifests = MXHXResolvers.emitMappings();
 	}
 
-	private var manifests:Map<String, Map<String, String>> /* Map<Uri<TagName, Qname>> */ = [];
+	private var manifests:Map<String, Map<String, MXHXManifestEntry>> /* Map<Uri<TagName, Qname>> */ = [];
 	private var qnameToMXHXTypeSymbolLookup:Map<String, IMXHXTypeSymbol> = [];
 
-	public function registerManifest(uri:String, mappings:Map<String, String>):Void {
+	public function registerManifest(uri:String, mappings:Map<String, MXHXManifestEntry>):Void {
 		manifests.set(uri, mappings);
 	}
 
@@ -319,13 +318,28 @@ class MXHXRttiResolver implements IMXHXResolver {
 	public function getTagNamesForQname(qnameToFind:String):Map<String, String> {
 		var result:Map<String, String> = [];
 		for (uri => mappings in manifests) {
-			for (tagName => qname in mappings) {
-				if (qname == qnameToFind) {
+			for (tagName => manifestEntry in mappings) {
+				if (manifestEntry.qname == qnameToFind) {
 					result.set(uri, tagName);
 				}
 			}
 		}
 		return result;
+	}
+
+	public function getParamsForQname(qnameToFind:String):Array<String> {
+		for (uri => mappings in manifests) {
+			for (tagName => manifestEntry in mappings) {
+				if (manifestEntry.qname == qnameToFind) {
+					var params = manifestEntry.params;
+					if (params == null) {
+						return [];
+					}
+					return params.copy();
+				}
+			}
+		}
+		return [];
 	}
 
 	public function getTypes():Array<IMXHXTypeSymbol> {
@@ -334,7 +348,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 		// but any class is technically able to be completed,
 		// so this implementation is incomplete
 		for (uri => mappings in manifests) {
-			for (tagName => qname in mappings) {
+			for (tagName => manifestEntry in mappings) {
+				var qname = manifestEntry.qname;
 				if (!result.exists(qname)) {
 					var symbol = resolveQname(qname);
 					if (symbol != null) {
@@ -1042,17 +1057,34 @@ class MXHXRttiResolver implements IMXHXResolver {
 		if (uri != null && manifests.exists(uri)) {
 			var mappings = manifests.get(uri);
 			if (mappings.exists(localName)) {
-				var qname = mappings.get(localName);
-				if (localName == TYPE_ARRAY) {
-					var typeAttr = tagData.getAttributeData(ATTRIBUTE_TYPE);
-					if (typeAttr != null) {
-						var itemType:IMXHXTypeSymbol = resolveQname(typeAttr.rawValue);
+				var manifestEntry = mappings.get(localName);
+				var qname = manifestEntry.qname;
+				var paramNames = manifestEntry.params;
+				if (paramNames != null && paramNames.length > 0) {
+					var paramQnames:Array<String> = paramNames.map(paramName -> {
+						var paramNameAttr = tagData.getAttributeData(paramName);
+						if (paramNameAttr == null) {
+							return null;
+						}
+						var itemType:IMXHXTypeSymbol = resolveQname(paramNameAttr.rawValue);
 						if (tagData.stateName != null) {
 							return null;
 						}
-						var qname = MXHXResolverTools.definitionToQname(TYPE_ARRAY, [], localName, [itemType.qname]);
-						return resolveQname(qname);
+						return itemType.qname;
+					});
+					qname += "<";
+					for (i in 0...paramQnames.length) {
+						if (i > 0) {
+							qname += ",";
+						}
+						var paramQname = paramQnames[i];
+						if (paramQname == null) {
+							paramQname = "%";
+						}
+						qname += paramQname;
 					}
+					qname += ">";
+					return resolveQname(qname);
 				}
 				var type = resolveQname(qname);
 				if (type != null) {

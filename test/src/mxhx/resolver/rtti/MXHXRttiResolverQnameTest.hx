@@ -1,5 +1,6 @@
 package mxhx.resolver.rtti;
 
+import mxhx.manifest.MXHXManifestEntry;
 import mxhx.symbols.IMXHXAbstractSymbol;
 import haxe.Resource;
 import mxhx.symbols.IMXHXClassSymbol;
@@ -15,11 +16,11 @@ class MXHXRttiResolverQnameTest extends Test {
 
 		var content = Resource.getString("mxhx-manifest");
 		var xml = Xml.parse(content);
-		var mappings:Map<String, String> = [];
+		var mappings:Map<String, MXHXManifestEntry> = [];
 		for (componentXml in xml.firstElement().elementsNamed("component")) {
 			var xmlName = componentXml.get("id");
 			var qname = componentXml.get("class");
-			mappings.set(xmlName, qname);
+			mappings.set(xmlName, new MXHXManifestEntry(xmlName, qname));
 		}
 		resolver.registerManifest("https://ns.mxhx.dev/2024/tests", mappings);
 	}
