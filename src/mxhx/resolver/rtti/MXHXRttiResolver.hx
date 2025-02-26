@@ -636,7 +636,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 			var constructorArgs = constructor.args;
 			if (constructorArgs != null) {
 				args = constructorArgs.map(function(arg):IMXHXArgumentSymbol {
-					var argQname = cTypeToQname(arg.t);
+					var argQname = cTypeToQname(arg.t, result);
 					var type = resolveQname(argQname);
 					return new MXHXArgumentSymbol(arg.name, type, arg.opt);
 				});
@@ -765,7 +765,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		result.params = params != null ? params : [];
 		result.paramNames = abstractdef.params.copy();
 
-		var typeQname = cTypeToQname(abstractdef.athis);
+		var typeQname = cTypeToQname(abstractdef.athis, result);
 		result.type = resolveQname(typeQname);
 
 		if (abstractdef.impl != null) {
@@ -782,7 +782,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 				default:
 			}
 			if (fromQname == null) {
-				fromQname = cTypeToQname(from.t);
+				fromQname = cTypeToQname(from.t, result);
 			}
 			var resolvedField:IMXHXFieldSymbol = null;
 			if (result.impl != null) {
@@ -793,7 +793,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		});
 
 		result.to = abstractdef.to.map(function(to):IMXHXAbstractToOrFromInfo {
-			var qname = cTypeToQname(to.t);
+			var qname = cTypeToQname(to.t, result);
 			var resolvedField:IMXHXFieldSymbol = null;
 			if (result.impl != null) {
 				resolvedField = Lambda.find(result.impl.fields, fieldSymbol -> fieldSymbol.isStatic && fieldSymbol.name == to.field);
@@ -816,7 +816,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return result;
 	}
 
-	private function functionArgsAndRetToQname(args:Array<FunctionArgument>, ret:CType):String {
+	private function functionArgsAndRetToQname(args:Array<FunctionArgument>, ret:CType, ?typeParameterContext:IMXHXTypeSymbol):String {
 		var qname = '(';
 		for (i in 0...args.length) {
 			var arg = args[i];
@@ -828,13 +828,13 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}
 			// qname += arg.name;
 			// qname += ':';
-			var argTypeName = cTypeToQname(arg.t);
+			var argTypeName = cTypeToQname(arg.t, typeParameterContext);
 			if (argTypeName == null) {
 				argTypeName = "Dynamic";
 			}
 			qname += argTypeName;
 		}
-		var retName = cTypeToQname(ret);
+		var retName = cTypeToQname(ret, typeParameterContext);
 		if (retName == null) {
 			retName = "Dynamic";
 		}
@@ -842,11 +842,32 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return qname;
 	}
 
-	private function cTypeToQname(ctype:CType):String {
+	private function cTypeToQname(ctype:CType, ?typeParameterContext:IMXHXTypeSymbol):String {
 		var ctypeName:String = null;
 		var ctypeParams:Array<CType> = null;
 		switch (ctype) {
 			case CClass(name, params):
+				if (typeParameterContext != null && typeParameterContext.paramNames.length > 0) {
+					var contextQname = typeParameterContext.name;
+					if (typeParameterContext.pack.length > 0) {
+						contextQname = typeParameterContext.pack.join(".") + "." + contextQname;
+					}
+					if (StringTools.startsWith(name, contextQname + ".")) {
+						var typeParameterName = name.substr(contextQname.length + 1);
+						var paramNames = typeParameterContext.paramNames;
+						if (paramNames.length > 0) {
+							for (i in 0...paramNames.length) {
+								var paramName = paramNames[i];
+								if (paramName == typeParameterName) {
+									var contextParam = typeParameterContext.params[i];
+									if (contextParam != null) {
+										return contextParam.qname;
+									}
+								}
+							}
+						}
+					}
+				}
 				ctypeName = name;
 				ctypeParams = params;
 			case CAbstract(name, params):
@@ -860,7 +881,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 				ctypeParams = params;
 			case CFunction(args, ret):
 				// return "haxe.Function";
-				return functionArgsAndRetToQname(args, ret);
+				return functionArgsAndRetToQname(args, ret, typeParameterContext);
 			case CDynamic(t):
 				return "Dynamic";
 			case CAnonymous(fields):
@@ -870,6 +891,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 			default:
 				return null;
 		}
+
 		if (ctypeName != null) {
 			var qname = ctypeName;
 			if (ctypeParams != null && ctypeParams.length > 0) {
@@ -878,7 +900,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 					if (i > 0) {
 						qname += ",";
 					}
-					qname += cTypeToQname(ctypeParams[i]);
+					qname += cTypeToQname(ctypeParams[i], typeParameterContext);
 				}
 				qname += ">";
 			}
@@ -894,7 +916,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 
 	private function createMXHXFieldSymbolForClassField(field:ClassField, isStatic:Bool, classdef:Classdef, owner:IMXHXTypeSymbol):IMXHXFieldSymbol {
 		var resolvedType:IMXHXTypeSymbol = null;
-		var typeQname = cTypeToQname(field.type);
+		var typeQname = cTypeToQname(field.type, owner);
 		if (typeQname != null) {
 			resolvedType = resolveQname(typeQname);
 		}

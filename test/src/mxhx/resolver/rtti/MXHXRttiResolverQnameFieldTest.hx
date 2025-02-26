@@ -272,6 +272,34 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.equals("T", resolvedField.type.paramNames[0]);
 	}
 
+	public function testResolveField2WithInheritedTypeParameter():Void {
+		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.ArrayCollection<Float>");
+		Assert.notNull(resolvedClass);
+		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		Assert.notNull(resolvedClass.paramNames);
+		Assert.equals(1, resolvedClass.paramNames.length);
+		Assert.equals("T", resolvedClass.paramNames[0]);
+
+		var resolvedArrayField = Lambda.find(resolvedClass.fields, field -> field.name == "array");
+		Assert.notNull(resolvedArrayField);
+		Assert.notNull(resolvedArrayField.type);
+		Assert.isOfType(resolvedArrayField.type, IMXHXClassSymbol);
+		Assert.equals("Array<Float>", resolvedArrayField.type.qname);
+		Assert.notNull(resolvedArrayField.type.paramNames);
+		Assert.equals(1, resolvedArrayField.type.paramNames.length);
+		Assert.equals("T", resolvedArrayField.type.paramNames[0]);
+
+		var resolvedGetField = Lambda.find(resolvedClass.fields, field -> field.name == "get");
+		Assert.notNull(resolvedGetField);
+		Assert.notNull(resolvedGetField.type);
+		Assert.equals("(Int) -> Float", resolvedGetField.type.qname);
+
+		var resolvedSetField = Lambda.find(resolvedClass.fields, field -> field.name == "set");
+		Assert.notNull(resolvedSetField);
+		Assert.notNull(resolvedSetField.type);
+		Assert.equals("(Int, Float) -> Void", resolvedSetField.type.qname);
+	}
+
 	public function testResolveMethodField():Void {
 		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.TestPropertiesClass");
 		Assert.notNull(resolvedClass);
