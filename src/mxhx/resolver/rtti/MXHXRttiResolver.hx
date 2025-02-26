@@ -492,6 +492,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		}
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
+		result.paramNames = classdef.params.copy();
 		var fields:Array<IMXHXFieldSymbol> = [];
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef, result)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef, result)));
@@ -564,6 +565,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		}
 		result.interfaces = resolvedInterfaces;
 		result.params = params != null ? params : [];
+		result.paramNames = classdef.params.copy();
 		var fields:Array<IMXHXFieldSymbol> = [];
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef, result)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef, result)));
@@ -626,6 +628,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
 		result.params = params != null ? params : [];
+		result.paramNames = enumdef.params.copy();
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
 		fields = fields.concat(enumdef.constructors.map(function(constructor:EnumField):IMXHXEnumFieldSymbol {
 			var args:Array<IMXHXArgumentSymbol> = null;
@@ -708,6 +711,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
 		result.params = params != null ? params : [];
+		result.paramNames = abstractdef.params.copy();
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
 		if (abstractdef.impl != null) {
 			fields = fields.concat(abstractdef.impl.statics.map(function(field):IMXHXEnumFieldSymbol {
@@ -758,6 +762,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
 		result.params = params != null ? params : [];
+		result.paramNames = abstractdef.params.copy();
 
 		var typeQname = cTypeToQname(abstractdef.athis);
 		result.type = resolveQname(typeQname);
