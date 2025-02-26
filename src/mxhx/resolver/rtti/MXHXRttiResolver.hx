@@ -862,6 +862,8 @@ class MXHXRttiResolver implements IMXHXResolver {
 									var contextParam = typeParameterContext.params[i];
 									if (contextParam != null) {
 										return contextParam.qname;
+									} else {
+										return null;
 									}
 								}
 							}

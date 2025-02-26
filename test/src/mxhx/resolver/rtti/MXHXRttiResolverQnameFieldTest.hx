@@ -261,15 +261,25 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.notNull(resolvedClass.paramNames);
 		Assert.equals(1, resolvedClass.paramNames.length);
 		Assert.equals("T", resolvedClass.paramNames[0]);
-		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "array");
-		Assert.notNull(resolvedField);
-		Assert.notNull(resolvedField.type);
-		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
+		var resolvedArrayField = Lambda.find(resolvedClass.fields, field -> field.name == "array");
+		Assert.notNull(resolvedArrayField);
+		Assert.notNull(resolvedArrayField.type);
+		Assert.isOfType(resolvedArrayField.type, IMXHXClassSymbol);
 		// TODO: fix the % that should be used only internally
-		Assert.equals("Array<%>", resolvedField.type.qname);
-		Assert.notNull(resolvedField.type.paramNames);
-		Assert.equals(1, resolvedField.type.paramNames.length);
-		Assert.equals("T", resolvedField.type.paramNames[0]);
+		Assert.equals("Array<%>", resolvedArrayField.type.qname);
+		Assert.notNull(resolvedArrayField.type.paramNames);
+		Assert.equals(1, resolvedArrayField.type.paramNames.length);
+		Assert.equals("T", resolvedArrayField.type.paramNames[0]);
+
+		var resolvedGetField = Lambda.find(resolvedClass.fields, field -> field.name == "get");
+		Assert.notNull(resolvedGetField);
+		Assert.notNull(resolvedGetField.type);
+		Assert.equals("(Int) -> Dynamic", resolvedGetField.type.qname);
+
+		var resolvedSetField = Lambda.find(resolvedClass.fields, field -> field.name == "set");
+		Assert.notNull(resolvedSetField);
+		Assert.notNull(resolvedSetField.type);
+		Assert.equals("(Int, Dynamic) -> Void", resolvedSetField.type.qname);
 	}
 
 	public function testResolveField2WithInheritedTypeParameter():Void {
