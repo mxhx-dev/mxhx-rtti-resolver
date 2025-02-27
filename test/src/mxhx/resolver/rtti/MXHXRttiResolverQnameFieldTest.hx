@@ -51,6 +51,11 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("Array<String>", resolvedField.type.qname);
+
+		Assert.notNull(resolvedField.type.params);
+		Assert.equals(1, resolvedField.type.params.length);
+		Assert.equals("String", resolvedField.type.params[0].qname);
+
 		Assert.notNull(resolvedField.type.paramNames);
 		Assert.equals(1, resolvedField.type.paramNames.length);
 		Assert.equals("T", resolvedField.type.paramNames[0]);
@@ -197,6 +202,12 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Null<Float>", resolvedField.type.qname);
+		Assert.notNull(resolvedField.type.params);
+		Assert.equals(1, resolvedField.type.params.length);
+		Assert.equals("Float", resolvedField.type.params[0].qname);
+		Assert.notNull(resolvedField.type.paramNames);
+		Assert.equals(1, resolvedField.type.paramNames.length);
+		Assert.equals("T", resolvedField.type.paramNames[0]);
 	}
 
 	public function testResolveStrictlyTypedField():Void {
@@ -258,6 +269,9 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.ArrayCollection");
 		Assert.notNull(resolvedClass);
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		Assert.notNull(resolvedClass.params);
+		Assert.equals(1, resolvedClass.params.length);
+		Assert.isNull(resolvedClass.params[0]);
 		Assert.notNull(resolvedClass.paramNames);
 		Assert.equals(1, resolvedClass.paramNames.length);
 		Assert.equals("T", resolvedClass.paramNames[0]);
@@ -267,6 +281,9 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedArrayField.type, IMXHXClassSymbol);
 		// TODO: fix the % that should be used only internally
 		Assert.equals("Array<%>", resolvedArrayField.type.qname);
+		Assert.notNull(resolvedArrayField.type.params);
+		Assert.equals(1, resolvedArrayField.type.params.length);
+		Assert.isNull(resolvedArrayField.type.params[0]);
 		Assert.notNull(resolvedArrayField.type.paramNames);
 		Assert.equals(1, resolvedArrayField.type.paramNames.length);
 		Assert.equals("T", resolvedArrayField.type.paramNames[0]);
@@ -280,12 +297,32 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.notNull(resolvedSetField);
 		Assert.notNull(resolvedSetField.type);
 		Assert.equals("(Int, Dynamic) -> Void", resolvedSetField.type.qname);
+
+		Assert.notNull(resolvedClass.interfaces);
+		Assert.equals(1, resolvedClass.interfaces.length);
+
+		var interface0 = resolvedClass.interfaces[0];
+		Assert.notNull(interface0);
+		Assert.isOfType(interface0, IMXHXInterfaceSymbol);
+		Assert.equals("fixtures.IFlatCollection<%>", interface0.qname);
+
+		Assert.notNull(interface0.params);
+		Assert.equals(1, interface0.params.length);
+		Assert.isNull(interface0.params[0]);
+
+		Assert.notNull(interface0.paramNames);
+		Assert.equals(1, interface0.paramNames.length);
+		Assert.equals("U", interface0.paramNames[0]);
 	}
 
-	public function testResolveField2WithInheritedTypeParameter():Void {
+	public function testResolveFieldWithInheritedTypeParameter():Void {
 		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.ArrayCollection<Float>");
 		Assert.notNull(resolvedClass);
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		Assert.equals("fixtures.ArrayCollection<Float>", resolvedClass.qname);
+		Assert.notNull(resolvedClass.params);
+		Assert.equals(1, resolvedClass.params.length);
+		Assert.equals("Float", resolvedClass.params[0].qname);
 		Assert.notNull(resolvedClass.paramNames);
 		Assert.equals(1, resolvedClass.paramNames.length);
 		Assert.equals("T", resolvedClass.paramNames[0]);
@@ -295,6 +332,9 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.notNull(resolvedArrayField.type);
 		Assert.isOfType(resolvedArrayField.type, IMXHXClassSymbol);
 		Assert.equals("Array<Float>", resolvedArrayField.type.qname);
+		Assert.notNull(resolvedArrayField.type.params);
+		Assert.equals(1, resolvedArrayField.type.params.length);
+		Assert.equals("Float", resolvedArrayField.type.params[0].qname);
 		Assert.notNull(resolvedArrayField.type.paramNames);
 		Assert.equals(1, resolvedArrayField.type.paramNames.length);
 		Assert.equals("T", resolvedArrayField.type.paramNames[0]);
@@ -308,6 +348,22 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.notNull(resolvedSetField);
 		Assert.notNull(resolvedSetField.type);
 		Assert.equals("(Int, Float) -> Void", resolvedSetField.type.qname);
+
+		Assert.notNull(resolvedClass.interfaces);
+		Assert.equals(1, resolvedClass.interfaces.length);
+
+		var interface0 = resolvedClass.interfaces[0];
+		Assert.notNull(interface0);
+		Assert.isOfType(interface0, IMXHXInterfaceSymbol);
+		Assert.equals("fixtures.IFlatCollection<Float>", interface0.qname);
+
+		Assert.notNull(interface0.params);
+		Assert.equals(1, interface0.params.length);
+		Assert.equals("Float", interface0.params[0].qname);
+
+		Assert.notNull(interface0.paramNames);
+		Assert.equals(1, interface0.paramNames.length);
+		Assert.equals("U", interface0.paramNames[0]);
 	}
 
 	public function testResolveMethodField():Void {

@@ -70,6 +70,9 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.isOfType(resolved, IMXHXTypeSymbol);
 		var typeSymbol:IMXHXTypeSymbol = cast resolved;
 		Assert.equals("Array<String>", typeSymbol.qname);
+		Assert.notNull(typeSymbol.params);
+		Assert.equals(1, typeSymbol.params.length);
+		Assert.equals("String", typeSymbol.params[0].qname);
 		Assert.notNull(typeSymbol.paramNames);
 		Assert.equals(1, typeSymbol.paramNames.length);
 		Assert.equals("T", typeSymbol.paramNames[0]);
@@ -398,6 +401,12 @@ class MXHXRttiResolverTagFieldValueTypeTest extends Test {
 		Assert.isTrue(args[1].optional);
 		Assert.notNull(args[1].type);
 		Assert.equals("Null<Float>", args[1].type.qname);
+		Assert.notNull(args[1].type.params);
+		Assert.equals(1, args[1].type.params.length);
+		Assert.equals("Float", args[1].type.params[0].qname);
+		Assert.notNull(args[1].type.paramNames);
+		Assert.equals(1, args[1].type.paramNames.length);
+		Assert.equals("T", args[1].type.paramNames[0]);
 	}
 
 	public function testResolveFieldValueTypeNull():Void {

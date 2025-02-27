@@ -1,8 +1,8 @@
 package mxhx.resolver.rtti;
 
+import haxe.Resource;
 import mxhx.manifest.MXHXManifestEntry;
 import mxhx.symbols.IMXHXAbstractSymbol;
-import haxe.Resource;
 import mxhx.symbols.IMXHXClassSymbol;
 import mxhx.symbols.IMXHXInterfaceSymbol;
 import utest.Assert;
@@ -39,6 +39,11 @@ class MXHXRttiResolverQnameTest extends Test {
 		var resolved = resolver.resolveQname("Array");
 		Assert.notNull(resolved);
 		Assert.equals("Array", resolved.qname);
+
+		Assert.notNull(resolved.params);
+		Assert.equals(1, resolved.params.length);
+		Assert.isNull(resolved.params[0]);
+
 		Assert.notNull(resolved.paramNames);
 		Assert.equals(1, resolved.paramNames.length);
 		Assert.equals("T", resolved.paramNames[0]);
@@ -48,6 +53,11 @@ class MXHXRttiResolverQnameTest extends Test {
 		var resolved = resolver.resolveQname("Array<Float>");
 		Assert.notNull(resolved);
 		Assert.equals("Array<Float>", resolved.qname);
+
+		Assert.notNull(resolved.params);
+		Assert.equals(1, resolved.params.length);
+		Assert.equals("Float", resolved.params[0].qname);
+
 		Assert.notNull(resolved.paramNames);
 		Assert.equals(1, resolved.paramNames.length);
 		Assert.equals("T", resolved.paramNames[0]);
@@ -152,19 +162,36 @@ class MXHXRttiResolverQnameTest extends Test {
 	public function testResolveGenericWithoutParameter():Void {
 		var resolved = resolver.resolveQname("fixtures.ArrayCollection");
 		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXClassSymbol);
 		Assert.equals("fixtures.ArrayCollection", resolved.qname);
 
 		Assert.notNull(resolved.params);
-		Assert.equals(0, resolved.params.length);
+		Assert.equals(1, resolved.params.length);
+		Assert.isNull(resolved.params[0]);
 
 		Assert.notNull(resolved.paramNames);
 		Assert.equals(1, resolved.paramNames.length);
 		Assert.equals("T", resolved.paramNames[0]);
+
+		var resolvedClass = cast(resolved, IMXHXClassSymbol);
+		var interface0 = resolvedClass.interfaces[0];
+		Assert.notNull(interface0);
+		Assert.isOfType(interface0, IMXHXInterfaceSymbol);
+		Assert.equals("fixtures.IFlatCollection<%>", interface0.qname);
+
+		Assert.notNull(interface0.params);
+		Assert.equals(1, interface0.params.length);
+		Assert.isNull(interface0.params[0]);
+
+		Assert.notNull(interface0.paramNames);
+		Assert.equals(1, interface0.paramNames.length);
+		Assert.equals("U", interface0.paramNames[0]);
 	}
 
 	public function testResolveGenericWithParameter():Void {
 		var resolved = resolver.resolveQname("fixtures.ArrayCollection<Float>");
 		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXClassSymbol);
 		Assert.equals("fixtures.ArrayCollection<Float>", resolved.qname);
 
 		Assert.notNull(resolved.params);
@@ -174,5 +201,22 @@ class MXHXRttiResolverQnameTest extends Test {
 		Assert.notNull(resolved.paramNames);
 		Assert.equals(1, resolved.paramNames.length);
 		Assert.equals("T", resolved.paramNames[0]);
+
+		var resolvedClass = cast(resolved, IMXHXClassSymbol);
+		Assert.notNull(resolvedClass.interfaces);
+		Assert.equals(1, resolvedClass.interfaces.length);
+
+		var interface0 = resolvedClass.interfaces[0];
+		Assert.notNull(interface0);
+		Assert.isOfType(interface0, IMXHXInterfaceSymbol);
+		Assert.equals("fixtures.IFlatCollection<Float>", interface0.qname);
+
+		Assert.notNull(interface0.params);
+		Assert.equals(1, interface0.params.length);
+		Assert.equals("Float", interface0.params[0].qname);
+
+		Assert.notNull(interface0.paramNames);
+		Assert.equals(1, interface0.paramNames.length);
+		Assert.equals("U", interface0.paramNames[0]);
 	}
 }

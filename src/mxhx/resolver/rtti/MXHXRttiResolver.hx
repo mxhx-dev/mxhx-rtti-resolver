@@ -399,9 +399,18 @@ class MXHXRttiResolver implements IMXHXResolver {
 			moduleName = pack.join(".") + "." + name;
 		}
 		qname = MXHXResolverTools.definitionToQname(name, pack, moduleName, params.map(param -> param != null ? param.qname : null));
-		var result = new MXHXAbstractSymbol(name, pack, params);
+		var result = new MXHXAbstractSymbol(name, pack);
 		result.qname = qname;
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
+
+		var isNull = pack.length == 0 && name == "Null";
+		if (isNull) {
+			result.params = (params != null && params.length == 1) ? params : [null];
+			result.paramNames = ["T"];
+		} else {
+			result.params = params != null ? params : [];
+			result.paramNames = [];
+		}
 
 		return result;
 	}
@@ -424,9 +433,18 @@ class MXHXRttiResolver implements IMXHXResolver {
 			moduleName = pack.join(".") + "." + name;
 		}
 		qname = MXHXResolverTools.definitionToQname(name, pack, moduleName, params.map(param -> param != null ? param.qname : null));
-		var result = new MXHXClassSymbol(name, pack, params);
+		var result = new MXHXClassSymbol(name, pack);
 		result.qname = qname;
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
+
+		var isArray = pack.length == 0 && name == "Array";
+		if (isArray) {
+			result.params = (params != null && params.length == 1) ? params : [null];
+			result.paramNames = ["T"];
+		} else {
+			result.params = params != null ? params : [];
+			result.paramNames = [];
+		}
 
 		var resolvedSuperClass = Type.getSuperClass(resolvedClass);
 		if (resolvedSuperClass != null) {
@@ -437,7 +455,6 @@ class MXHXRttiResolver implements IMXHXResolver {
 			}
 			result.superClass = cast(classType, IMXHXClassSymbol);
 		}
-		result.paramNames = pack.length == 0 && name == "Array" ? ["T"] : [];
 		var fields:Array<IMXHXFieldSymbol> = [];
 		// fields = fields.concat(Type.getInstanceFields(resolvedClass).map(field -> createMXHXFieldSymbolForTypeField(field, false)));
 		// fields = fields.concat(Type.getClassFields(resolvedClass).map(field -> createMXHXFieldSymbolForTypeField(field, true)));
@@ -475,25 +492,40 @@ class MXHXRttiResolver implements IMXHXResolver {
 		// before parsing anything else
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
-		if (classdef.superClass != null) {
-			var classType = resolveQname(classdef.superClass.path);
+		var paramsCount = classdef.params.length;
+		if (params != null && params.length < paramsCount) {
+			params = params.copy();
+			params.resize(paramsCount);
+		}
+		result.params = params != null ? params : classdef.params.map(p -> null);
+		result.paramNames = classdef.params.copy();
+
+		var superClassPathParams = classdef.superClass;
+		var resolvedSuperClass:IMXHXClassSymbol = null;
+		if (superClassPathParams != null) {
+			var classType = resolveQname(pathParamsToQname(superClassPathParams, result));
 			if (!(classType is IMXHXClassSymbol)) {
 				throw 'Expected class: ${classType.qname}. Is it missing @:rtti metadata?';
 			}
-			result.superClass = cast(classType, IMXHXClassSymbol);
+			resolvedSuperClass = cast(classType, IMXHXClassSymbol);
+
+			populateParamsMap(resolvedSuperClass, superClassPathParams, result, @:privateAccess result.__paramsMap);
 		}
+		result.superClass = resolvedSuperClass;
+
 		var resolvedInterfaces:Array<IMXHXInterfaceSymbol> = [];
 		for (currentInterface in classdef.interfaces) {
-			var interfaceType = resolveQname(currentInterface.path);
+			var interfaceType = resolveQname(pathParamsToQname(currentInterface, result));
 			if (!(interfaceType is IMXHXInterfaceSymbol)) {
 				throw 'Expected interface: ${interfaceType.qname}. Is it missing @:rtti metadata? 1: ${classdef.path}';
 			}
 			var resolvedInterface = cast(interfaceType, IMXHXInterfaceSymbol);
 			resolvedInterfaces.push(resolvedInterface);
+
+			populateParamsMap(resolvedInterface, currentInterface, result, @:privateAccess result.__paramsMap);
 		}
 		result.interfaces = resolvedInterfaces;
-		result.params = params != null ? params : [];
-		result.paramNames = classdef.params.copy();
+
 		var fields:Array<IMXHXFieldSymbol> = [];
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef, result)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef, result)));
@@ -555,18 +587,27 @@ class MXHXRttiResolver implements IMXHXResolver {
 		// before parsing anything else
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
+		var paramsCount = classdef.params.length;
+		if (params != null && params.length < paramsCount) {
+			params = params.copy();
+			params.resize(paramsCount);
+		}
+		result.params = params != null ? params : classdef.params.map(p -> null);
+		result.paramNames = classdef.params.copy();
+
 		var resolvedInterfaces:Array<IMXHXInterfaceSymbol> = [];
 		for (currentInterface in classdef.interfaces) {
-			var interfaceType = resolveQname(currentInterface.path);
+			var interfaceType = resolveQname(pathParamsToQname(currentInterface, result));
 			if (!(interfaceType is IMXHXInterfaceSymbol)) {
 				throw 'Expected interface: ${interfaceType.qname}. Is it missing @:rtti metadata? 2: ${classdef.path}';
 			}
 			var resolvedInterface = cast(interfaceType, IMXHXInterfaceSymbol);
 			resolvedInterfaces.push(resolvedInterface);
+
+			populateParamsMap(resolvedInterface, currentInterface, result, @:privateAccess result.__paramsMap);
 		}
 		result.interfaces = resolvedInterfaces;
-		result.params = params != null ? params : [];
-		result.paramNames = classdef.params.copy();
+
 		var fields:Array<IMXHXFieldSymbol> = [];
 		fields = fields.concat(classdef.fields.map(field -> createMXHXFieldSymbolForClassField(field, false, classdef, result)));
 		fields = fields.concat(classdef.statics.map(field -> createMXHXFieldSymbolForClassField(field, true, classdef, result)));
@@ -628,8 +669,14 @@ class MXHXRttiResolver implements IMXHXResolver {
 		// before parsing anything else
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
-		result.params = params != null ? params : [];
+		var paramsCount = enumdef.params.length;
+		if (params != null && params.length < paramsCount) {
+			params = params.copy();
+			params.resize(paramsCount);
+		}
+		result.params = params != null ? params : enumdef.params.map(p -> null);
 		result.paramNames = enumdef.params.copy();
+
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
 		fields = fields.concat(enumdef.constructors.map(function(constructor:EnumField):IMXHXEnumFieldSymbol {
 			var args:Array<IMXHXArgumentSymbol> = null;
@@ -711,8 +758,14 @@ class MXHXRttiResolver implements IMXHXResolver {
 		// before parsing anything else
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
-		result.params = params != null ? params : [];
+		var paramsCount = abstractdef.params.length;
+		if (params != null && params.length < paramsCount) {
+			params = params.copy();
+			params.resize(paramsCount);
+		}
+		result.params = params != null ? params : abstractdef.params.map(p -> null);
 		result.paramNames = abstractdef.params.copy();
+
 		var fields:Array<IMXHXEnumFieldSymbol> = [];
 		if (abstractdef.impl != null) {
 			fields = fields.concat(abstractdef.impl.statics.map(function(field):IMXHXEnumFieldSymbol {
@@ -762,7 +815,12 @@ class MXHXRttiResolver implements IMXHXResolver {
 		// before parsing anything else
 		qnameToMXHXTypeSymbolLookup.set(qname, result);
 
-		result.params = params != null ? params : [];
+		var paramsCount = abstractdef.params.length;
+		if (params != null && params.length < paramsCount) {
+			params = params.copy();
+			params.resize(paramsCount);
+		}
+		result.params = params != null ? params : abstractdef.params.map(p -> null);
 		result.paramNames = abstractdef.params.copy();
 
 		var typeQname = cTypeToQname(abstractdef.athis, result);
@@ -816,6 +874,42 @@ class MXHXRttiResolver implements IMXHXResolver {
 		return result;
 	}
 
+	private function populateParamsMap(resolvedType:IMXHXTypeSymbol, cTypePathParams:PathParams, context:IMXHXTypeSymbol,
+			paramsMap:Map<IMXHXTypeSymbol, Map<String, String>>):Void {
+		var innerParamsMap:Map<String, String> = [];
+		for (j in 0...cTypePathParams.params.length) {
+			var param = cTypePathParams.params[j];
+			var resolved = resolvedType.params[j];
+			if (resolved != null) {
+				continue;
+			}
+			var paramName = cTypeToQname(param, null);
+			if (paramName == null) {
+				// this shouldn't happen
+				continue;
+			}
+
+			var contextQname = context.name;
+			if (context.pack.length > 0) {
+				contextQname = context.pack.join(".") + "." + contextQname;
+			}
+			if (StringTools.startsWith(paramName, contextQname + ".")) {
+				var contextParamName = paramName.substr(contextQname.length + 1);
+				var paramNames = context.paramNames;
+				if (paramNames.length > 0) {
+					for (k in 0...paramNames.length) {
+						var paramName = paramNames[k];
+						if (paramName == contextParamName) {
+							var resolvedTypeParamName = resolvedType.paramNames[j];
+							innerParamsMap.set(resolvedTypeParamName, contextParamName);
+						}
+					}
+				}
+			}
+		}
+		paramsMap.set(resolvedType, innerParamsMap);
+	}
+
 	private function functionArgsAndRetToQname(args:Array<FunctionArgument>, ret:CType, ?typeParameterContext:IMXHXTypeSymbol):String {
 		var qname = '(';
 		for (i in 0...args.length) {
@@ -839,6 +933,26 @@ class MXHXRttiResolver implements IMXHXResolver {
 			retName = "Dynamic";
 		}
 		qname += ') -> ${retName}';
+		return qname;
+	}
+
+	private function pathParamsToQname(pathParams:PathParams, ?typeParameterContext:IMXHXTypeSymbol):String {
+		var qname:String = pathParams.path;
+		var pathParamsParams = pathParams.params;
+		if (pathParamsParams.length > 0) {
+			qname += "<";
+			for (i in 0...pathParamsParams.length) {
+				if (i > 0) {
+					qname += ",";
+				}
+				var paramQname = cTypeToQname(pathParamsParams[i], typeParameterContext);
+				if (paramQname == null) {
+					paramQname = "%";
+				}
+				qname += paramQname;
+			}
+			qname += ">";
+		}
 		return qname;
 	}
 
@@ -902,7 +1016,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 					if (i > 0) {
 						qname += ",";
 					}
-					qname += cTypeToQname(ctypeParams[i], typeParameterContext);
+					var paramQname = cTypeToQname(ctypeParams[i], typeParameterContext);
+					if (paramQname == null) {
+						paramQname = "%";
+					}
+					qname += paramQname;
 				}
 				qname += ">";
 			}

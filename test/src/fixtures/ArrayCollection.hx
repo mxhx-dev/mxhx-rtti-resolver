@@ -1,7 +1,7 @@
 package fixtures;
 
 @:defaultXmlProperty("array")
-class ArrayCollection<T> {
+class ArrayCollection<T> implements IFlatCollection<T> {
 	public function new() {}
 
 	public var array:Array<T>;

@@ -75,6 +75,9 @@ class MXHXRttiResolverTagFieldTypeTest extends Test {
 		Assert.notNull(fieldSymbol.type);
 		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
 		Assert.equals("Array<String>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("String", fieldSymbol.type.params[0].qname);
 		Assert.notNull(fieldSymbol.type.paramNames);
 		Assert.equals(1, fieldSymbol.type.paramNames.length);
 		Assert.equals("T", fieldSymbol.type.paramNames[0]);
@@ -382,6 +385,12 @@ class MXHXRttiResolverTagFieldTypeTest extends Test {
 		Assert.notNull(fieldSymbol.type);
 		Assert.isOfType(fieldSymbol.type, IMXHXAbstractSymbol);
 		Assert.equals("Null<Float>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("Float", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
 	}
 
 	public function testResolveFieldTypeStrict():Void {
