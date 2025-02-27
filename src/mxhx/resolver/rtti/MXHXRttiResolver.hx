@@ -1202,6 +1202,15 @@ class MXHXRttiResolver implements IMXHXResolver {
 	}
 
 	private function resolveTagAsTypeSymbol(tagData:IMXHXTagData):IMXHXSymbol {
+		var parentTag = tagData.parentTag;
+		var assignedToField:IMXHXFieldSymbol = null;
+		if (parentTag != null) {
+			var resolvedParentTag = resolveTag(parentTag);
+			if ((resolvedParentTag is IMXHXFieldSymbol)) {
+				assignedToField = cast resolvedParentTag;
+			}
+		}
+
 		var prefix = tagData.prefix;
 		var uri = tagData.uri;
 		var localName = tagData.shortName;
@@ -1224,6 +1233,21 @@ class MXHXRttiResolver implements IMXHXResolver {
 						}
 						return itemType.qname;
 					});
+					if (assignedToField != null && assignedToField.type != null) {
+						var resolvedType = resolveQname(qname);
+						if (resolvedType.paramNames.length > 0) {
+							for (i in 0...paramQnames.length) {
+								var param = paramQnames[i];
+								if (param == null) {
+									var paramName = resolvedType.paramNames[i];
+									var inferredParam = inferTypeParameterForAssignment(resolvedType, paramName, assignedToField.type);
+									if (inferredParam != null) {
+										paramQnames[i] = inferredParam.qname;
+									}
+								}
+							}
+						}
+					}
 					qname += "<";
 					for (i in 0...paramQnames.length) {
 						if (i > 0) {
@@ -1268,6 +1292,97 @@ class MXHXRttiResolver implements IMXHXResolver {
 			return null;
 		}
 		return qnameType;
+	}
+
+	private static function getTypeParameterNamed(paramName:String, type:IMXHXTypeSymbol):IMXHXTypeSymbol {
+		var params = type.params;
+		var paramNames = type.paramNames;
+		for (i in 0...paramNames.length) {
+			var other = paramNames[i];
+			if (paramName == other) {
+				return params[i];
+			}
+		}
+		return null;
+	}
+
+	private static function inferTypeParameterForAssignment(type:IMXHXTypeSymbol, paramName:String, assignToType:IMXHXTypeSymbol):IMXHXTypeSymbol {
+		if (assignToType == null) {
+			return null;
+		}
+		var param = getTypeParameterNamed(paramName, type);
+		if (param != null) {
+			return param;
+		}
+		var assignToTypeQnameToFind = assignToType.qname;
+		var index = assignToTypeQnameToFind.indexOf("<");
+		if (index != -1) {
+			assignToTypeQnameToFind = assignToTypeQnameToFind.substr(0, index);
+		}
+		var typeQname = type.qname;
+		var index = typeQname.indexOf("<");
+		if (index != -1) {
+			typeQname = typeQname.substr(0, index);
+		}
+		if (assignToTypeQnameToFind == typeQname) {
+			return getTypeParameterNamed(paramName, assignToType);
+		}
+		if ((type is MXHXClassSymbol)) {
+			var typeAsClass:MXHXClassSymbol = cast type;
+			var superClass = typeAsClass.superClass;
+			if (superClass != null && (assignToType is IMXHXClassSymbol)) {
+				var superClassQname = superClass.qname;
+				var index = superClassQname.indexOf("<");
+				if (index != -1) {
+					superClassQname = superClassQname.substr(0, index);
+				}
+				if (superClassQname == assignToTypeQnameToFind) {
+					var superClassParamsMap = @:privateAccess typeAsClass.__paramsMap.get(superClass);
+					for (key => value in superClassParamsMap) {
+						if (value == paramName) {
+							return getTypeParameterNamed(key, assignToType);
+						}
+					}
+				}
+			} else if ((assignToType is IMXHXInterfaceSymbol)) {
+				for (currentInterface in typeAsClass.interfaces) {
+					var currentInterfaceQname = currentInterface.qname;
+					var index = currentInterfaceQname.indexOf("<");
+					if (index != -1) {
+						currentInterfaceQname = currentInterfaceQname.substr(0, index);
+					}
+					if (currentInterfaceQname == assignToTypeQnameToFind) {
+						var interfaceParamsMap = @:privateAccess typeAsClass.__paramsMap.get(currentInterface);
+						for (key => value in interfaceParamsMap) {
+							if (value == paramName) {
+								return getTypeParameterNamed(key, assignToType);
+							}
+						}
+					}
+				}
+			}
+		}
+		if ((type is MXHXInterfaceSymbol)) {
+			var typeAsInterface:MXHXInterfaceSymbol = cast type;
+			if ((assignToType is IMXHXInterfaceSymbol)) {
+				for (currentInterface in typeAsInterface.interfaces) {
+					var currentInterfaceQname = currentInterface.qname;
+					var index = currentInterfaceQname.indexOf("<");
+					if (index != -1) {
+						currentInterfaceQname = currentInterfaceQname.substr(0, index);
+					}
+					if (currentInterfaceQname == assignToTypeQnameToFind) {
+						var interfaceParamsMap = @:privateAccess typeAsInterface.__paramsMap.get(currentInterface);
+						for (key => value in interfaceParamsMap) {
+							if (value == paramName) {
+								return getTypeParameterNamed(key, assignToType);
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	private static function getDefaultProperty(classdef:Classdef):String {

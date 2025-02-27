@@ -30,7 +30,11 @@ class MXHXRttiResolverTagFieldTypeTest extends Test {
 		for (componentXml in xml.firstElement().elementsNamed("component")) {
 			var xmlName = componentXml.get("id");
 			var qname = componentXml.get("class");
-			mappings.set(xmlName, new MXHXManifestEntry(xmlName, qname));
+			var params:Array<String> = null;
+			if (componentXml.exists("params")) {
+				params = componentXml.get("params").split(",");
+			}
+			mappings.set(xmlName, new MXHXManifestEntry(xmlName, qname, params));
 		}
 		resolver.registerManifest("https://ns.mxhx.dev/2024/tests", mappings);
 	}
@@ -58,11 +62,92 @@ class MXHXRttiResolverTagFieldTypeTest extends Test {
 		Assert.equals("Any", fieldSymbol.type.qname);
 	}
 
-	public function testResolveFieldTypeArray():Void {
+	public function testResolveFieldTypeArrayWithInferredTypeNoContent():Void {
 		var offsetTag = getOffsetTag('
 			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
 				<tests:array>
 					<mx:Array/>
+				</tests:array>
+			</tests:TestPropertiesClass>
+		', 132);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXFieldSymbol);
+		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
+		Assert.notNull(fieldSymbol.type);
+		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
+		Assert.equals("Array<String>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("String", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
+	}
+
+	public function testResolveFieldTypeArrayWithInferredTypeAndContent():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:array>
+					<mx:Array>
+						<mx:String>One</mx:String>
+						<mx:String>Two</mx:String>
+					</mx:Array>
+				</tests:array>
+			</tests:TestPropertiesClass>
+		', 132);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXFieldSymbol);
+		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
+		Assert.notNull(fieldSymbol.type);
+		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
+		Assert.equals("Array<String>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("String", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
+	}
+
+	public function testResolveFieldTypeArrayWithExplicitTypeNoContent():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:array>
+					<mx:Array type="String"/>
+				</tests:array>
+			</tests:TestPropertiesClass>
+		', 132);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXFieldSymbol);
+		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
+		Assert.notNull(fieldSymbol.type);
+		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
+		Assert.equals("Array<String>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("String", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
+	}
+
+	public function testResolveFieldTypeArrayWithExplicitTypeAndContent():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:array>
+					<mx:Array type="String">
+						<mx:String>One</mx:String>
+						<mx:String>Two</mx:String>
+					</mx:Array>
 				</tests:array>
 			</tests:TestPropertiesClass>
 		', 132);
@@ -429,5 +514,111 @@ class MXHXRttiResolverTagFieldTypeTest extends Test {
 		Assert.notNull(fieldSymbol.type);
 		Assert.isOfType(fieldSymbol.type, IMXHXInterfaceSymbol);
 		Assert.equals("fixtures.ITestPropertiesInterface", fieldSymbol.type.qname);
+	}
+
+	public function testResolveFieldTypeArrayCollectionWithInferredTypeNoContent():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:arrayCollection>
+					<tests:ArrayCollection/>
+				</tests:arrayCollection>
+			</tests:TestPropertiesClass>
+		', 132);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXFieldSymbol);
+		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
+		Assert.notNull(fieldSymbol.type);
+		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
+		Assert.equals("fixtures.ArrayCollection<Float>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("Float", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
+	}
+
+	public function testResolveFieldTypeArrayCollectionWithInferredTypeAndContent():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:arrayCollection>
+					<tests:ArrayCollection>
+						<mx:Float>123.4</mx:Float>
+						<mx:Float>56.78</mx:Float>
+					</tests:ArrayCollection>
+				</tests:arrayCollection>
+			</tests:TestPropertiesClass>
+		', 132);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXFieldSymbol);
+		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
+		Assert.notNull(fieldSymbol.type);
+		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
+		Assert.equals("fixtures.ArrayCollection<Float>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("Float", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
+	}
+
+	public function testResolveFieldTypeArrayCollectionWithExplicitTypeNoContent():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:arrayCollection>
+					<tests:ArrayCollection type="Float"/>
+				</tests:arrayCollection>
+			</tests:TestPropertiesClass>
+		', 132);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXFieldSymbol);
+		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
+		Assert.notNull(fieldSymbol.type);
+		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
+		Assert.equals("fixtures.ArrayCollection<Float>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("Float", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
+	}
+
+	public function testResolveFieldTypeArrayCollectionWithExplicitTypeAndContent():Void {
+		var offsetTag = getOffsetTag('
+			<tests:TestPropertiesClass xmlns:mx="https://ns.mxhx.dev/2024/basic" xmlns:tests="https://ns.mxhx.dev/2024/tests">
+				<tests:arrayCollection>
+					<tests:ArrayCollection type="Float">
+						<mx:Float>123.4</mx:Float>
+						<mx:Float>56.78</mx:Float>
+					</tests:ArrayCollection>
+				</tests:arrayCollection>
+			</tests:TestPropertiesClass>
+		', 132);
+		Assert.notNull(offsetTag);
+
+		var resolved = resolver.resolveTag(offsetTag);
+		Assert.notNull(resolved);
+		Assert.isOfType(resolved, IMXHXFieldSymbol);
+		var fieldSymbol:IMXHXFieldSymbol = cast resolved;
+		Assert.notNull(fieldSymbol.type);
+		Assert.isOfType(fieldSymbol.type, IMXHXClassSymbol);
+		Assert.equals("fixtures.ArrayCollection<Float>", fieldSymbol.type.qname);
+		Assert.notNull(fieldSymbol.type.params);
+		Assert.equals(1, fieldSymbol.type.params.length);
+		Assert.equals("Float", fieldSymbol.type.params[0].qname);
+		Assert.notNull(fieldSymbol.type.paramNames);
+		Assert.equals(1, fieldSymbol.type.paramNames.length);
+		Assert.equals("T", fieldSymbol.type.paramNames[0]);
 	}
 }

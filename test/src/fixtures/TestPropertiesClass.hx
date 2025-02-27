@@ -30,6 +30,7 @@ class TestPropertiesClass implements ITestPropertiesInterface {
 	public var abstractFromModuleType:TestAbstractFromModuleType;
 	public var classFromModuleWithDifferentName:ThisClassHasADifferentNameThanItsModule;
 	public var strictInterface:ITestPropertiesInterface;
+	public var arrayCollection:ArrayCollection<Float>;
 
 	// compilation will fail if Context.getType() is used with this one
 	// needs a typedef for a class with @:generic, and not the class alone

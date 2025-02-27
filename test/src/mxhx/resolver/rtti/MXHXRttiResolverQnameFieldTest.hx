@@ -22,7 +22,11 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		for (componentXml in xml.firstElement().elementsNamed("component")) {
 			var xmlName = componentXml.get("id");
 			var qname = componentXml.get("class");
-			mappings.set(xmlName, new MXHXManifestEntry(xmlName, qname));
+			var params:Array<String> = null;
+			if (componentXml.exists("params")) {
+				params = componentXml.get("params").split(",");
+			}
+			mappings.set(xmlName, new MXHXManifestEntry(xmlName, qname, params));
 		}
 		resolver.registerManifest("https://ns.mxhx.dev/2024/tests", mappings);
 	}
