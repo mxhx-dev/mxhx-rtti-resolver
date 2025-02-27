@@ -1206,7 +1206,13 @@ class MXHXRttiResolver implements IMXHXResolver {
 		var assignedToField:IMXHXFieldSymbol = null;
 		if (parentTag != null) {
 			var resolvedParentTag = resolveTag(parentTag);
-			if ((resolvedParentTag is IMXHXFieldSymbol)) {
+			if ((resolvedParentTag is IMXHXClassSymbol)) {
+				var resolvedParentClass:IMXHXClassSymbol = cast resolvedParentTag;
+				var defaultProperty = resolvedParentClass.defaultProperty;
+				if (defaultProperty != null) {
+					assignedToField = MXHXSymbolTools.resolveFieldByName(resolvedParentClass, defaultProperty);
+				}
+			} else if ((resolvedParentTag is IMXHXFieldSymbol)) {
 				assignedToField = cast resolvedParentTag;
 			}
 		}
