@@ -373,13 +373,14 @@ class MXHXRttiGenerator {
 			case FVar(read, write):
 				switch (read) {
 					case AccNormal:
-						classFieldElement.set("get", "default");
+						// there is no get attribute for normal
 					case AccNo:
 						classFieldElement.set("get", "null");
 					case AccNever:
-						classFieldElement.set("get", "never");
+						// the Haxe compiler seems to convert never to null
+						classFieldElement.set("set", "null");
 					case AccCall:
-						classFieldElement.set("get", "get");
+						classFieldElement.set("get", "accessor");
 					case AccInline:
 						classFieldElement.set("get", "inline");
 
@@ -436,13 +437,14 @@ class MXHXRttiGenerator {
 				}
 				switch (write) {
 					case AccNormal:
-						classFieldElement.set("set", "default");
+						// there is no set attribute for normal
 					case AccNo:
 						classFieldElement.set("set", "null");
 					case AccNever:
-						classFieldElement.set("set", "never");
+						// the Haxe compiler seems to convert never to null
+						classFieldElement.set("set", "null");
 					case AccCall:
-						classFieldElement.set("set", "get");
+						classFieldElement.set("set", "accessor");
 					case AccInline:
 						classFieldElement.set("set", "inline");
 					case AccRequire(r, msg):
