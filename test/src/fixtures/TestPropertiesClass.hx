@@ -32,6 +32,10 @@ class TestPropertiesClass implements ITestPropertiesInterface {
 	public var strictInterface:ITestPropertiesInterface;
 	public var arrayCollection:ArrayCollection<Float>;
 
+	public var publicModuleClass:PublicModuleClass;
+
+	private var privateModuleClass:PrivateModuleClass;
+
 	// compilation will fail if Context.getType() is used with this one
 	// needs a typedef for a class with @:generic, and not the class alone
 	public var genericMeta:TestTypedefWithGenericMeta<String>;
@@ -40,4 +44,12 @@ class TestPropertiesClass implements ITestPropertiesInterface {
 	public function testMethod():Void {}
 
 	public dynamic function testDynamicMethod():Void {}
+}
+
+class PublicModuleClass {
+	public function new() {}
+}
+
+private class PrivateModuleClass {
+	public function new() {}
 }

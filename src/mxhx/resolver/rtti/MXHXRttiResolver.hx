@@ -473,6 +473,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 			name = name.substr(dotIndex + 1);
 		}
 		var moduleName = classdef.module;
+		if (moduleName != null && moduleName != classdef.path && classdef.isPrivate && !abstractImpl) {
+			var moduleParts = moduleName.split(".");
+			moduleParts[moduleParts.length - 1] = "_" + moduleParts[moduleParts.length - 1];
+			moduleName = moduleParts.join(".");
+		}
 		// if it's the implementation of an abstract, the module property will
 		// point to the abstract, but the path will be more technically correct
 		// because it rewrites the abstract name to start with a _ character
@@ -571,6 +576,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 			name = name.substr(dotIndex + 1);
 		}
 		var moduleName = classdef.module;
+		if (moduleName != null && moduleName != classdef.path && classdef.isPrivate) {
+			var moduleParts = moduleName.split(".");
+			moduleParts[moduleParts.length - 1] = "_" + moduleParts[moduleParts.length - 1];
+			moduleName = moduleParts.join(".");
+		}
 		if (moduleName == null) {
 			moduleName = classdef.path;
 		}
@@ -653,6 +663,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 			name = name.substr(dotIndex + 1);
 		}
 		var moduleName = enumdef.module;
+		if (moduleName != null && moduleName != enumdef.path && enumdef.isPrivate) {
+			var moduleParts = moduleName.split(".");
+			moduleParts[moduleParts.length - 1] = "_" + moduleParts[moduleParts.length - 1];
+			moduleName = moduleParts.join(".");
+		}
 		if (moduleName == null) {
 			moduleName = enumdef.path;
 		}
@@ -742,6 +757,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 			name = name.substr(dotIndex + 1);
 		}
 		var moduleName = abstractdef.module;
+		if (moduleName != null && moduleName != abstractdef.path && abstractdef.isPrivate) {
+			var moduleParts = moduleName.split(".");
+			moduleParts[moduleParts.length - 1] = "_" + moduleParts[moduleParts.length - 1];
+			moduleName = moduleParts.join(".");
+		}
 		if (moduleName == null) {
 			moduleName = abstractdef.path;
 		}
@@ -818,6 +838,11 @@ class MXHXRttiResolver implements IMXHXResolver {
 			name = name.substr(dotIndex + 1);
 		}
 		var moduleName = abstractdef.module;
+		if (moduleName != null && moduleName != abstractdef.path && abstractdef.isPrivate) {
+			var moduleParts = moduleName.split(".");
+			moduleParts[moduleParts.length - 1] = "_" + moduleParts[moduleParts.length - 1];
+			moduleName = moduleParts.join(".");
+		}
 		if (moduleName == null) {
 			moduleName = abstractdef.path;
 		}

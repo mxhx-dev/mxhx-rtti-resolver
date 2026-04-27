@@ -41,6 +41,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "any");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Any", resolvedField.type.qname);
@@ -52,6 +53,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "array");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("Array<String>", resolvedField.type.qname);
@@ -71,6 +73,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "boolean");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Bool", resolvedField.type.qname);
@@ -82,6 +85,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "type");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Class<Dynamic>", resolvedField.type.qname);
@@ -93,6 +97,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "date");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("Date", resolvedField.type.qname);
@@ -104,6 +109,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "struct");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Dynamic", resolvedField.type.qname);
@@ -115,6 +121,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "ereg");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("EReg", resolvedField.type.qname);
@@ -126,6 +133,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "float");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Float", resolvedField.type.qname);
@@ -137,6 +145,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "func");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("haxe.Function", resolvedField.type.qname);
@@ -148,6 +157,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "funcTyped");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXFunctionTypeSymbol);
 		Assert.equals("() -> Void", resolvedField.type.qname);
@@ -159,6 +169,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "integer");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Int", resolvedField.type.qname);
@@ -170,6 +181,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "string");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("String", resolvedField.type.qname);
@@ -181,6 +193,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "unsignedInteger");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("UInt", resolvedField.type.qname);
@@ -192,6 +205,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "xml");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("Xml", resolvedField.type.qname);
@@ -203,6 +217,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "canBeNull");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXAbstractSymbol);
 		Assert.equals("Null<Float>", resolvedField.type.qname);
@@ -220,6 +235,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "strictlyTyped");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("fixtures.TestPropertiesClass", resolvedField.type.qname);
@@ -231,6 +247,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "strictInterface");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXInterfaceSymbol);
 		Assert.equals("fixtures.ITestPropertiesInterface", resolvedField.type.qname);
@@ -242,6 +259,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "abstractEnumValue");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXEnumSymbol);
 		Assert.equals("fixtures.TestPropertyAbstractEnum", resolvedField.type.qname);
@@ -253,6 +271,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "enumValue");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXEnumSymbol);
 		Assert.equals("fixtures.TestPropertyEnum", resolvedField.type.qname);
@@ -264,6 +283,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "classFromModuleWithDifferentName");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.notNull(resolvedField.type);
 		Assert.isOfType(resolvedField.type, IMXHXClassSymbol);
 		Assert.equals("fixtures.ModuleWithClassThatHasDifferentName.ThisClassHasADifferentNameThanItsModule", resolvedField.type.qname);
@@ -281,6 +301,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.equals("T", resolvedClass.paramNames[0]);
 		var resolvedArrayField = Lambda.find(resolvedClass.fields, field -> field.name == "array");
 		Assert.notNull(resolvedArrayField);
+		Assert.isTrue(resolvedArrayField.isPublic);
 		Assert.notNull(resolvedArrayField.type);
 		Assert.isOfType(resolvedArrayField.type, IMXHXClassSymbol);
 		// TODO: fix the % that should be used only internally
@@ -333,6 +354,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 
 		var resolvedArrayField = Lambda.find(resolvedClass.fields, field -> field.name == "array");
 		Assert.notNull(resolvedArrayField);
+		Assert.isTrue(resolvedArrayField.isPublic);
 		Assert.notNull(resolvedArrayField.type);
 		Assert.isOfType(resolvedArrayField.type, IMXHXClassSymbol);
 		Assert.equals("Array<Float>", resolvedArrayField.type.qname);
@@ -376,6 +398,7 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "testMethod");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.isTrue(resolvedField.isMethod);
 		Assert.isFalse(resolvedField.isWritable);
 	}
@@ -386,7 +409,36 @@ class MXHXRttiResolverQnameFieldTest extends Test {
 		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
 		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "testDynamicMethod");
 		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
 		Assert.isTrue(resolvedField.isMethod);
 		Assert.isTrue(resolvedField.isWritable);
+	}
+
+	public function testResolveFieldWithPublicModuleClass():Void {
+		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.TestPropertiesClass");
+		Assert.notNull(resolvedClass);
+		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "publicModuleClass");
+		Assert.notNull(resolvedField);
+		Assert.isTrue(resolvedField.isPublic);
+		var resolvedFieldType = resolvedField.type;
+		Assert.notNull(resolvedFieldType);
+		Assert.isOfType(resolvedFieldType, IMXHXClassSymbol);
+		Assert.isFalse(resolvedFieldType.isPrivate);
+		Assert.equals("fixtures.TestPropertiesClass.PublicModuleClass", resolvedFieldType.qname);
+	}
+
+	public function testResolveFieldWithPrivateModuleClass():Void {
+		var resolvedClass:IMXHXClassSymbol = cast resolver.resolveQname("fixtures.TestPropertiesClass");
+		Assert.notNull(resolvedClass);
+		Assert.isOfType(resolvedClass, IMXHXClassSymbol);
+		var resolvedField = Lambda.find(resolvedClass.fields, field -> field.name == "privateModuleClass");
+		Assert.notNull(resolvedField);
+		Assert.isFalse(resolvedField.isPublic);
+		var resolvedFieldType = resolvedField.type;
+		Assert.notNull(resolvedFieldType);
+		Assert.isOfType(resolvedFieldType, IMXHXClassSymbol);
+		Assert.isTrue(resolvedFieldType.isPrivate);
+		Assert.equals("fixtures._TestPropertiesClass.PrivateModuleClass", resolvedFieldType.qname);
 	}
 }
