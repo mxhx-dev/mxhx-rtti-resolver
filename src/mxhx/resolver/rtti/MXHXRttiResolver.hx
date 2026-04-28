@@ -945,7 +945,9 @@ class MXHXRttiResolver implements IMXHXResolver {
 						var paramName = paramNames[k];
 						if (paramName == contextParamName) {
 							var resolvedTypeParamName = resolvedType.paramNames[j];
-							innerParamsMap.set(resolvedTypeParamName, contextParamName);
+							if (resolvedTypeParamName != null) {
+								innerParamsMap.set(resolvedTypeParamName, contextParamName);
+							}
 						}
 					}
 				}
