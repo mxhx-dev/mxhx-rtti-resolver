@@ -443,7 +443,7 @@ class MXHXRttiResolver implements IMXHXResolver {
 			result.paramNames = ["T"];
 		} else {
 			result.params = params != null ? params : [];
-			result.paramNames = [];
+			result.paramNames = params != null ? params.map(param -> param != null ? param.qname : null) : [];
 		}
 
 		var resolvedSuperClass = Type.getSuperClass(resolvedClass);
